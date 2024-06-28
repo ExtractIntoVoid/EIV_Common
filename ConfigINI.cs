@@ -17,12 +17,12 @@ namespace EIV_Common
             return data[section][key];
         }
 
-        public static T Read<T>(string filename, string section, string key) where T : IConvertible, IParsable<T>
+        public static T? Read<T>(string filename, string section, string key) where T : IConvertible, IParsable<T>
         {
             string readed = Read(filename, section, key);
             if (string.IsNullOrEmpty(readed))
                 return default;
-            T value = default;
+            T? value = default;
             T.TryParse(readed, null, out value);
             return value;
         }

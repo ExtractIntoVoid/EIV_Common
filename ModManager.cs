@@ -15,7 +15,7 @@ namespace EIV_Common
         {
             if (MainLog.logger == null) 
                 MainLog.CreateNew();
-            Debugger.ParseLogger(MainLog.logger);
+            Debugger.ParseLogger(MainLog.logger!);
             MainLoader.Init(new LoadSettings()
             {
                 LoadAsMainCaller = false,

@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\EIV_DataPack\EIV_DataPack.csproj" />
     <ProjectReference Include="..\EIV_JsonLib\EIV_JsonLib.csproj" />
     <ProjectReference Include="..\GodotCSharpMod\ModAPI\ModAPI.csproj" />
   </ItemGroup>

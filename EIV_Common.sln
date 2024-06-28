@@ -7,6 +7,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EIV_Common", "EIV_Common.cs
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestApp", "..\TestApp\TestApp.csproj", "{103EA0D4-68B1-4E9E-ACFC-D14753272B11}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EIV_JsonLib", "..\EIV_JsonLib\EIV_JsonLib.csproj", "{91FA15D4-D0C9-47F3-8A56-069737FB1D20}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModAPI", "..\GodotCSharpMod\ModAPI\ModAPI.csproj", "{E1153800-ACC9-4475-8824-0A73337D265F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EIV_DataPack", "..\EIV_DataPack\EIV_DataPack.csproj", "{765EE8EF-EEB1-4DA6-8FE4-C7668A713F67}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +37,30 @@ Global
 		{103EA0D4-68B1-4E9E-ACFC-D14753272B11}.ExportRelease|Any CPU.Build.0 = Release|Any CPU
 		{103EA0D4-68B1-4E9E-ACFC-D14753272B11}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{103EA0D4-68B1-4E9E-ACFC-D14753272B11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91FA15D4-D0C9-47F3-8A56-069737FB1D20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91FA15D4-D0C9-47F3-8A56-069737FB1D20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91FA15D4-D0C9-47F3-8A56-069737FB1D20}.ExportDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91FA15D4-D0C9-47F3-8A56-069737FB1D20}.ExportDebug|Any CPU.Build.0 = Debug|Any CPU
+		{91FA15D4-D0C9-47F3-8A56-069737FB1D20}.ExportRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{91FA15D4-D0C9-47F3-8A56-069737FB1D20}.ExportRelease|Any CPU.Build.0 = Release|Any CPU
+		{91FA15D4-D0C9-47F3-8A56-069737FB1D20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91FA15D4-D0C9-47F3-8A56-069737FB1D20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1153800-ACC9-4475-8824-0A73337D265F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1153800-ACC9-4475-8824-0A73337D265F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1153800-ACC9-4475-8824-0A73337D265F}.ExportDebug|Any CPU.ActiveCfg = ExportDebug|Any CPU
+		{E1153800-ACC9-4475-8824-0A73337D265F}.ExportDebug|Any CPU.Build.0 = ExportDebug|Any CPU
+		{E1153800-ACC9-4475-8824-0A73337D265F}.ExportRelease|Any CPU.ActiveCfg = ExportRelease|Any CPU
+		{E1153800-ACC9-4475-8824-0A73337D265F}.ExportRelease|Any CPU.Build.0 = ExportRelease|Any CPU
+		{E1153800-ACC9-4475-8824-0A73337D265F}.Release|Any CPU.ActiveCfg = ExportRelease|Any CPU
+		{E1153800-ACC9-4475-8824-0A73337D265F}.Release|Any CPU.Build.0 = ExportRelease|Any CPU
+		{765EE8EF-EEB1-4DA6-8FE4-C7668A713F67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{765EE8EF-EEB1-4DA6-8FE4-C7668A713F67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{765EE8EF-EEB1-4DA6-8FE4-C7668A713F67}.ExportDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{765EE8EF-EEB1-4DA6-8FE4-C7668A713F67}.ExportDebug|Any CPU.Build.0 = Debug|Any CPU
+		{765EE8EF-EEB1-4DA6-8FE4-C7668A713F67}.ExportRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{765EE8EF-EEB1-4DA6-8FE4-C7668A713F67}.ExportRelease|Any CPU.Build.0 = Release|Any CPU
+		{765EE8EF-EEB1-4DA6-8FE4-C7668A713F67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{765EE8EF-EEB1-4DA6-8FE4-C7668A713F67}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

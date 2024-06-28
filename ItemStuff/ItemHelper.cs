@@ -15,18 +15,29 @@ namespace EIV_Common.ItemStuff
             if (!item.HasProperty(valueName))
                 return false;
             var prop = item.GetType().GetProperty(valueName)!;
+            Console.WriteLine(prop.PropertyType);
+            if (!prop.CanWrite)
+                return false;
             switch (kv.AvailableTypeName)
             {
                 case TypeName.String:
+                    if (prop.PropertyType != typeof(string))
+                        return false;
                     prop.SetValue(item, kv.StringValue);
                     break;
                 case TypeName.Int32:
+                    if (prop.PropertyType != typeof(int))
+                        return false;
                     prop.SetValue(item, kv.IntValue);
                     break;
                 case TypeName.UInt32:
+                    if (prop.PropertyType != typeof(uint))
+                        return false;
                     prop.SetValue(item, kv.UIntValue);
                     break;
                 case TypeName.Decimal:
+                    if (prop.PropertyType != typeof(decimal))
+                        return false;
                     prop.SetValue(item, kv.DecimalValue);
                     break;
                 default:

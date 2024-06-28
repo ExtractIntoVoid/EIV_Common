@@ -27,7 +27,12 @@ namespace EIV_Common.Logger
             {
                 if (stackFrames.Length >= 7)
                 {
-                    methodName = stackFrames[7].GetMethod().DeclaringType.FullName + "." + stackFrames[7].GetMethod().Name;
+                    var method = stackFrames[7].GetMethod();
+                    if (method == null)
+                        goto END;
+                    if (method.DeclaringType == null)
+                        goto END;
+                    methodName = method.DeclaringType.FullName + "." + method.Name;
                 }    
                 else
                 {
@@ -38,14 +43,19 @@ namespace EIV_Common.Logger
             {
                 if (stackFrames.Length >= 5)
                 {
-                    methodName = stackFrames[5].GetMethod().DeclaringType.FullName + "." + stackFrames[5].GetMethod().Name;
+                    var method = stackFrames[5].GetMethod();
+                    if (method == null)
+                        goto END;
+                    if (method.DeclaringType == null)
+                        goto END;
+                    methodName = method.DeclaringType.FullName + "." + method.Name;
                 }   
                 else
                 {
                     Console.WriteLine("error <5");
                 }
             }
-            
+        END:
             logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("Method", methodName));
         }
     }
