@@ -1,14 +1,13 @@
-﻿using EIV_JsonLib.Interfaces;
+﻿using EIV_Common.JsonStuff;
+using EIV_JsonLib.Interfaces;
 
 namespace EIV_Common.ItemStuff
 {
     public class ItemMaker
     {
-        public static Dictionary<string, IItem> Items = [];
-
         public static IItem? MakeNewItem(string BaseId)
         {
-            if (!Items.TryGetValue(BaseId, out IItem? item))
+            if (!Storage.Items.TryGetValue(BaseId, out IItem? item))
                 return null;
             if (item == null)
                 return null;
@@ -17,7 +16,7 @@ namespace EIV_Common.ItemStuff
 
         public static T? CreateItem<T>(string BaseId) where T : IItem
         {
-            if (!Items.TryGetValue(BaseId, out IItem? item))
+            if (!Storage.Items.TryGetValue(BaseId, out IItem? item))
                 return default;
             if (item == null)
                 return default;
@@ -33,7 +32,7 @@ namespace EIV_Common.ItemStuff
 
         public static void PrintBaseIds()
         {
-            foreach (var item in Items)
+            foreach (var item in Storage.Items)
             {
                 Console.WriteLine(item.Key);
             }
