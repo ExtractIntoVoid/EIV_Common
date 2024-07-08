@@ -1,7 +1,7 @@
 ﻿using EIV_Common.JsonStuff;
 using EIV_JsonLib.Interfaces;
 
-namespace EIV_Common.ItemStuff
+namespace EIV_Common.JsonStuff
 {
     public class ItemMaker
     {
@@ -23,7 +23,6 @@ namespace EIV_Common.ItemStuff
 
             if (item is T)
             {
-                Console.WriteLine(item.ToString());
                 return (T)item.Clone();
             }
             return default;

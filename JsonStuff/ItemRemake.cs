@@ -1,7 +1,7 @@
 ﻿using EIV_JsonLib.Classes;
 using EIV_JsonLib.Interfaces;
 
-namespace EIV_Common.ItemStuff
+namespace EIV_Common.JsonStuff
 {
     public class ItemRemake
     {

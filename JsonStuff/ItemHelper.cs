@@ -1,13 +1,23 @@
 ﻿using EIV_JsonLib.Classes;
 using EIV_JsonLib.Interfaces;
 
-namespace EIV_Common.ItemStuff
+namespace EIV_Common.JsonStuff
 {
     public static class ItemHelper
     {
         public static bool HasProperty(this IItem item, string value)
         {
             return item.GetType().GetProperty(value) != null;
+        }
+
+        public static T? GetProperty<T>(this IItem item, string value)
+        {
+            if (item.HasProperty(value))
+            {
+                if (item.GetType().GetProperty(value)!.PropertyType == typeof(T))
+                    return (T?)item.GetType().GetProperty(value)!.GetValue(item);
+            }
+            return default;
         }
 
         public static bool ChangeProperty(this IItem item, string valueName, ItemRecreator.KVChange kv)
