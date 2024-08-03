@@ -33,18 +33,21 @@ public class JWTHandler
         }
     }
 
-
-    /// <summary>
-    /// Get JWT Token as JSON
-    /// </summary>
-    /// <param name="token">The Token</param>
-    /// <returns>JSON String</returns>
-    public static string GetJWTJson(string token)
+    public static RSA Parse3DPartyRSA(string XML)
     {
-        RSA rsa = GetRSA();
+        RSA rsa = RSA.Create();
+        rsa.FromXmlString(XML);
+        return rsa;
+    }
+
+
+    public static string GetJWTJson(string token, string RSAXML = "")
+    {
+        RSA rsa = RSAXML == "" ? GetRSA() : Parse3DPartyRSA(RSAXML);
+        var alg = RSAXML == "" ? new RS256Algorithm(rsa, rsa) : new RS256Algorithm(rsa);
         var json = JwtBuilder.Create()
-                             .WithAlgorithm(new RS256Algorithm(rsa, rsa))
-                             .Decode(token);
+            .WithAlgorithm(alg)
+            .Decode(token);
 
         return json;
     }
@@ -72,18 +75,14 @@ public class JWTHandler
         .WithAlgorithm(new RS256Algorithm(rsa, rsa));
     }
 
-    /// <summary>
-    /// Validating any jwt Token
-    /// </summary>
-    /// <param name="token">The Token</param>
-    /// <returns>True | False</returns>
-    public static bool Validate(string token)
+    public static bool Validate(string token, string RSAXML = "")
     {
-        RSA rsa = GetRSA();
+        RSA rsa = RSAXML == "" ? GetRSA() : Parse3DPartyRSA(RSAXML);
+        var alg = RSAXML == "" ? new RS256Algorithm(rsa, rsa) : new RS256Algorithm(rsa);
         try
         {
             var json = JwtBuilder.Create()
-                                 .WithAlgorithm(new RS256Algorithm(rsa, rsa))
+                                 .WithAlgorithm(alg)
                                  .MustVerifySignature()
                                  .Decode(token);
         }
