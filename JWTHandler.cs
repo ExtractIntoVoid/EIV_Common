@@ -64,6 +64,14 @@ public class JWTHandler
         return token;
     }
 
+    public static JwtBuilder CreateBuilder()
+    {
+        var now = DateTime.Now;
+        RSA rsa = GetRSA();
+        return JwtBuilder.Create()
+        .WithAlgorithm(new RS256Algorithm(rsa, rsa));
+    }
+
     /// <summary>
     /// Validating any jwt Token
     /// </summary>

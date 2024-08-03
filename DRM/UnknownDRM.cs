@@ -11,10 +11,16 @@ public class UnknownDRM : IDRM
         return null;
     }
 
-    public IUser GetUser()
+    public IUser? GetUser()
     {
-        return new UnknownUser();
+        return null;
     }
+
+    public INetwork? GetNetwork()
+    {
+        return null;
+    }
+
     public void Init()
     {
         
@@ -23,18 +29,5 @@ public class UnknownDRM : IDRM
     public void ShutDown()
     {
         
-    }
-}
-
-public class UnknownUser : IUser
-{
-    public string GetUserID()
-    {
-        return string.Empty;
-    }
-
-    public string GetUserName()
-    {
-        return string.Empty;
     }
 }
