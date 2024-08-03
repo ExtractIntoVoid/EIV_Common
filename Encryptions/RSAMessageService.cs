@@ -6,7 +6,7 @@ namespace EIV_Common.Encryptions
     {
         static RSA private_rsa; // this user private key.
         static RsaService privateService; //this user private service
-        static Dictionary<string, RsaService> public_RSAServicess;
+        static Dictionary<string, RsaService> public_RSAServices;
 
         static RSAMessageService()
         {
@@ -17,7 +17,7 @@ namespace EIV_Common.Encryptions
                 private_rsa.FromXmlString(File.ReadAllText("cert/rsa_private.xml"));
             File.WriteAllText("cert/rsa_private.xml", private_rsa.ToXmlString(true));
             privateService = new(private_rsa);
-            public_RSAServicess = new();
+            public_RSAServices = new();
         }
 
         /// <summary>
@@ -28,9 +28,9 @@ namespace EIV_Common.Encryptions
         /// <returns>Encrypted message</returns>
         public static byte[] EncryptMessage(byte[] msg, string userId)
         {
-            if (!public_RSAServicess.ContainsKey(userId))
+            if (!public_RSAServices.ContainsKey(userId))
                 return [];
-            return public_RSAServicess[userId].Encrypt(msg);
+            return public_RSAServices[userId].Encrypt(msg);
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace EIV_Common.Encryptions
         /// <param name="rsa">The RSA</param>
         public static void AddRSA(string userId, RSA rsa)
         {
-            public_RSAServicess[userId] = new(rsa);
+            public_RSAServices[userId] = new(rsa);
         }
 
         /// <summary>

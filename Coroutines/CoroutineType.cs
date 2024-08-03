@@ -1,9 +1,8 @@
-﻿namespace EIV_Common.Coroutines
+﻿namespace EIV_Common.Coroutines;
+
+public enum CoroutineType
 {
-    public enum CoroutineType
-    {
-        Process,
-        PhysicsProcess,
-        Custom,
-    }
+    Process,
+    PhysicsProcess,
+    Custom,
 }

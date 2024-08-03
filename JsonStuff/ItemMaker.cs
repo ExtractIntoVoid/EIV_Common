@@ -1,40 +1,39 @@
 ﻿using EIV_Common.JsonStuff;
 using EIV_JsonLib.Interfaces;
 
-namespace EIV_Common.JsonStuff
+namespace EIV_Common.JsonStuff;
+
+public class ItemMaker
 {
-    public class ItemMaker
+    public static IItem? MakeNewItem(string BaseId)
     {
-        public static IItem? MakeNewItem(string BaseId)
-        {
-            if (!Storage.Items.TryGetValue(BaseId, out IItem? item))
-                return null;
-            if (item == null)
-                return null;
-            return (IItem)item.Clone();
-        }
+        if (!Storage.Items.TryGetValue(BaseId, out IItem? item))
+            return null;
+        if (item == null)
+            return null;
+        return (IItem)item.Clone();
+    }
 
-        public static T? CreateItem<T>(string BaseId) where T : IItem
-        {
-            if (!Storage.Items.TryGetValue(BaseId, out IItem? item))
-                return default;
-            if (item == null)
-                return default;
-
-            if (item is T)
-            {
-                return (T)item.Clone();
-            }
+    public static T? CreateItem<T>(string BaseId) where T : IItem
+    {
+        if (!Storage.Items.TryGetValue(BaseId, out IItem? item))
             return default;
-        }
+        if (item == null)
+            return default;
 
-
-        public static void PrintBaseIds()
+        if (item is T)
         {
-            foreach (var item in Storage.Items)
-            {
-                Console.WriteLine(item.Key);
-            }
+            return (T)item.Clone();
+        }
+        return default;
+    }
+
+
+    public static void PrintBaseIds()
+    {
+        foreach (var item in Storage.Items)
+        {
+            Console.WriteLine(item.Key);
         }
     }
 }
