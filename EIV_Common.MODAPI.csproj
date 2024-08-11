@@ -6,12 +6,9 @@
         <Nullable>enable</Nullable>
         <Version>0.0.1.0</Version>
         <Description>Common utilites for EIV.</Description>
+        <DefineConstants>MODAPI</DefineConstants>
     </PropertyGroup>
 
-    <ItemGroup>
-      <Compile Remove="ModManager.cs" />
-    </ItemGroup>
-	
     <ItemGroup>
         <PackageReference Include="ini-parser-netstandard" Version="2.5.2" />
         <PackageReference Include="JWT" Version="10.1.1" />
@@ -23,12 +20,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\EIV_DataPack\EIV_DataPack.csproj" />
-	    <ProjectReference Include="..\EIV_JsonLib\EIV_JsonLib.csproj" />
-    </ItemGroup>
-
-    <ItemGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(DefineConstants), '^(.*;)*MODAPI(;.*)*$'))">
-		<ProjectReference Include="..\GodotCSharpMod\ModAPI\ModAPI.csproj" />
-		<Compile Include="ModManager.cs" />
+        <ProjectReference Include="..\EIV_JsonLib\EIV_JsonLib.csproj" />
+        <ProjectReference Include="..\GodotCSharpMod\ModAPI\ModAPI.csproj" />
     </ItemGroup>
 
 </Project>

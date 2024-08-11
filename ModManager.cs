@@ -1,4 +1,5 @@
-﻿using EIV_Common.JsonStuff;
+﻿#if MODAPI
+using EIV_Common.JsonStuff;
 using EIV_Common.Logger;
 using EIV_DataPack;
 using EIV_JsonLib;
@@ -92,3 +93,4 @@ public class ModManager
         Debugger.ClearLogger();
     }
 }
+#endif
