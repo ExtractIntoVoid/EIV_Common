@@ -35,12 +35,12 @@ public static class ItemHelper
                     return false;
                 prop.SetValue(item, kv.StringValue);
                 break;
-            case TypeName.Int32:
+            case TypeName.Int:
                 if (prop.PropertyType != typeof(int))
                     return false;
                 prop.SetValue(item, kv.IntValue);
                 break;
-            case TypeName.UInt32:
+            case TypeName.UInt:
                 if (prop.PropertyType != typeof(uint))
                     return false;
                 prop.SetValue(item, kv.UIntValue);
@@ -49,6 +49,11 @@ public static class ItemHelper
                 if (prop.PropertyType != typeof(decimal))
                     return false;
                 prop.SetValue(item, kv.DecimalValue);
+                break;
+            case TypeName.List_String:
+                if (prop.PropertyType != typeof(List<string>))
+                    return false;
+                prop.SetValue(item, kv.ListStringValue);
                 break;
             default:
                 break;
