@@ -1,8 +1,8 @@
 ﻿using MessagePack;
 
-namespace EIV_Common.MODAPI.LobbyPackets;
+namespace EIV_Common.LobbyPackets.Connections;
 
-[MessagePackObject()]
+[MessagePackObject]
 public class ConnectToLobby
 {
     [Key(0)]

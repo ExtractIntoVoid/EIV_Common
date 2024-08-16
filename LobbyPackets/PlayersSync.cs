@@ -1,11 +1,12 @@
 ﻿using MessagePack;
 
-namespace EIV_Common.MODAPI.LobbyPackets;
+namespace EIV_Common.LobbyPackets;
 
 
-[MessagePackObject()]
+[MessagePackObject]
 public class PlayersSync
 {
+    [Key(0)]
     public List<string /* UserId */> PlayerUserIds { get; set; } = [];
 
 }

@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Converters;
 using Newtonsoft.Json;
 using EIV_Common.DRM;
+using EIV_Common.Extensions;
 
 namespace EIV_Common.InfoJSON;
 
@@ -15,6 +16,6 @@ public class UserInfoJSON
 
     public string CreateUserId()
     {
-        return $"{UserId}@{Exts.GetEnumMemberValue(DRM)}";
+        return $"{UserId}@{DRM.GetEnumMemberValue()}";
     }
 }

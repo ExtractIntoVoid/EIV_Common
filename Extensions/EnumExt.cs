@@ -1,9 +1,9 @@
 ﻿using System.Reflection;
 using System.Runtime.Serialization;
 
-namespace EIV_Common.InfoJSON
+namespace EIV_Common.Extensions
 {
-    public static class Exts
+    public static class EnumExt
     {
         public static string? GetEnumMemberValue<T>(this T value) where T : Enum
         {

@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace EIV_Common.MODAPI.LobbyPackets;
+namespace EIV_Common.LobbyPackets;
 
 public class MinMax<T> where T : IMinMaxValue<T>
 {
