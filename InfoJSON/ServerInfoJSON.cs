@@ -10,6 +10,8 @@ public class ServerInfoJSON
 
     public GameInfo Game { get; set; } = new();
 
+    public ServerInfo Server { get; set; } = new();
+
     [JsonIgnore]
     public DateTimeOffset LastHeartBeat;
 
@@ -27,12 +29,22 @@ public class ServerInfoJSON
         }
     }
 
+    public class ServerInfo
+    {
+        [JsonRequired]
+        public string ServerName { get; set; } = string.Empty;
+
+        [JsonRequired]
+        public string ServerDescription { get; set; } = string.Empty;
+    }
+
     public class GameInfo
     {
         [JsonRequired]
         public string Version { get; set; } = string.Empty;
-        public List<string> Maps { get; set; } = new();
+        public string Map { get; set; } = string.Empty;
         public int PlayerNumbers { get; set; } = 0;
+        public int MaxPlayerNumbers { get; set; } = 0;
     }
 
     public class ModInfo
