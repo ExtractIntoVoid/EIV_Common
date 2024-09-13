@@ -16,11 +16,6 @@ public class UnknownDRM : IDRM
         return null;
     }
 
-    public INetwork? GetNetwork()
-    {
-        return null;
-    }
-
     public void Init()
     {
         

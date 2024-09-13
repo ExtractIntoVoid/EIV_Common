@@ -33,11 +33,4 @@ public interface IDRM
     /// </summary>
     /// <returns>User</returns>
     public IUser? GetUser();
-
-    /// <summary>
-    /// Getting the Network related informations
-    /// <br/> If not initialized or something wrong returns null.
-    /// </summary>
-    /// <returns>Network</returns>
-    public INetwork? GetNetwork();
 }

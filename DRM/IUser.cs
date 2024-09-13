@@ -6,6 +6,20 @@ namespace EIV_Common.DRM;
 /// </summary>
 public interface IUser
 {
+
+    /// <summary>
+    /// Called for login.
+    /// 
+    /// Only if <see cref="IDRM.DRMType"/> is <see cref="DRMType.DRM_EPIC"/>
+    /// </summary>
+    /// <param name="loginData">Login Data for Loggning in</param>
+    public void Login(object loginData);
+
+    /// <summary>
+    /// Called when Logged Out.
+    /// </summary>
+    public void LogOut();
+
     /// <summary>
     /// Getting User Id
     /// </summary>
