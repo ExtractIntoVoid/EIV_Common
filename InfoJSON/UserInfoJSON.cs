@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Converters;
 using Newtonsoft.Json;
-using EIV_Common.DRM;
+using EIV_Common.Platform;
 using EIV_Common.Extensions;
 
 namespace EIV_Common.InfoJSON;
@@ -8,7 +8,7 @@ namespace EIV_Common.InfoJSON;
 public class UserInfoJSON
 {
     [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
-    public DRMType DRM { get; set; } = DRMType.Unknown;
+    public PlatformType Platform { get; set; } = PlatformType.Unknown;
     public string Name { get; set; } = string.Empty;
     public string UserId { get; set; } = string.Empty;
     public string Version { get; set; } = string.Empty;
@@ -16,6 +16,6 @@ public class UserInfoJSON
 
     public string CreateUserId()
     {
-        return $"{UserId}@{DRM.GetEnumMemberValue()}";
+        return $"{UserId}@{Platform.GetEnumMemberValue()}";
     }
 }

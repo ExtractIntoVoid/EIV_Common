@@ -1,5 +1,5 @@
 ﻿
-namespace EIV_Common.DRM;
+namespace EIV_Common.Platform;
 
 /// <summary>
 /// User dependent.
@@ -10,7 +10,7 @@ public interface IUser
     /// <summary>
     /// Called for login.
     /// 
-    /// Only if <see cref="IDRM.DRMType"/> is <see cref="DRMType.DRM_EPIC"/>
+    /// Only if <see cref="IPlatform.PlatformType"/> is <see cref="PlatformType.Platform_EPIC"/>
     /// </summary>
     /// <param name="loginData">Login Data for Loggning in</param>
     public void Login(object loginData);

@@ -1,10 +1,10 @@
 ﻿using Godot;
 
-namespace EIV_Common.DRM;
+namespace EIV_Common.Platform;
 
-public class UnknownDRM : IDRM
+public class UnknownPlatform : IPlatform
 {
-    public DRMType DRMType => DRMType.Unknown;
+    public PlatformType PlatformType => PlatformType.Unknown;
 
     public Node? GetNode()
     {

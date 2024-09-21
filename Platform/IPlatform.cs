@@ -1,13 +1,13 @@
 ﻿using Godot;
 
-namespace EIV_Common.DRM;
+namespace EIV_Common.Platform;
 
 /// <summary>
 /// DRM interface
 /// </summary>
-public interface IDRM
+public interface IPlatform
 {
-    public DRMType DRMType { get; }
+    public PlatformType PlatformType { get; }
 
     /// <summary>
     /// Called when GameManager starts.

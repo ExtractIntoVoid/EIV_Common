@@ -3,18 +3,18 @@ using Newtonsoft.Json;
 using System.Runtime.Serialization;
 using System.ComponentModel;
 
-namespace EIV_Common.DRM;
+namespace EIV_Common.Platform;
 
 [JsonConverter(typeof(StringEnumConverter))]
 [DefaultValue(Unknown)]
-public enum DRMType
+public enum PlatformType
 {
     [EnumMember(Value = "unknown")]
     Unknown = -1,
-    [EnumMember(Value = "nodrm")]
-    DRM_FREE = 0,
+    [EnumMember(Value = "free")]
+    Platform_FREE = 0,
     [EnumMember(Value = "steam")]
-    DRM_STEAM = 1,
+    Platform_STEAM = 1,
     [EnumMember(Value = "epic")]
-    DRM_EPIC = 2,
+    Platform_EPIC = 2,
 }
