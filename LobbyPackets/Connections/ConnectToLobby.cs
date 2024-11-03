@@ -1,4 +1,5 @@
-﻿using MessagePack;
+﻿using EIV_Common.Common;
+using MessagePack;
 
 namespace EIV_Common.LobbyPackets.Connections;
 

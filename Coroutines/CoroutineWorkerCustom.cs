@@ -335,5 +335,26 @@ public class CoroutineWorkerCustom
             _mutex.ReleaseMutex();
         }
     }
+
+    public static void PauseCoroutineInstance(Coroutine coroutine)
+    {
+        Instance.PauseCoroutine(coroutine);
+    }
+    public void PauseCoroutine(Coroutine coroutine)
+    {
+        var index = Instance.CustomCoroutines.FindIndex(x => x.Equals(coroutine));
+        if (index == -1)
+        {
+            MainLog.logger?.Debug("No Coroutine!");
+            return;
+        }
+        if (_mutex.WaitOne(1))
+        {
+            var cor = Instance.CustomCoroutines[index];
+            cor.ShouldPause = true;
+            Instance.CustomCoroutines[index] = cor;
+            _mutex.ReleaseMutex();
+        }
+    }
     #endregion
 }

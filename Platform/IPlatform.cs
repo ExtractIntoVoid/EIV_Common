@@ -3,7 +3,7 @@
 namespace EIV_Common.Platform;
 
 /// <summary>
-/// DRM interface
+/// Platform interface
 /// </summary>
 public interface IPlatform
 {

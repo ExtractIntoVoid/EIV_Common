@@ -5,6 +5,13 @@ namespace EIV_Common;
 
 public class ConfigINI
 {
+    /// <summary>
+    /// Reading the <paramref name="section"/> and the <paramref name="key"/> from <paramref name="filename"/>
+    /// </summary>
+    /// <param name="filename">FileName to Read</param>
+    /// <param name="section">INI Section</param>
+    /// <param name="key">INI Key</param>
+    /// <returns>Readed value or <see cref="string.Empty"/></returns>
     public static string Read(string filename, string section, string key)
     {
         var parser = new FileIniDataParser();
@@ -16,6 +23,14 @@ public class ConfigINI
         return data[section][key];
     }
 
+    /// <summary>
+    /// Reading a <typeparamref name="T"/> type in a <paramref name="section"/> and the <paramref name="key"/> from <paramref name="filename"/>
+    /// </summary>
+    /// <typeparam name="T">A Type that has <see cref="IConvertible"/> and <see cref="IParsable{TSelf}"/></typeparam>
+    /// <param name="filename">FileName to Read</param>
+    /// <param name="section">INI Section</param>
+    /// <param name="key">INI Key</param>
+    /// <returns>Readed value or default</returns>
     public static T? Read<T>(string filename, string section, string key) where T : IConvertible, IParsable<T>
     {
         string readed = Read(filename, section, key);
@@ -26,8 +41,14 @@ public class ConfigINI
         return value;
     }
 
-
-    public static void Write(string filename, string category, string section, string? Value)
+    /// <summary>
+    /// Write a <paramref name="Value"/> to the <paramref name="filename"/> with a Key of <paramref name="key"/> and a Section as <paramref name="section"/>
+    /// </summary>
+    /// <param name="filename">FileName to write to</param>
+    /// <param name="section">INI Section</param>
+    /// <param name="key">INI Key</param>
+    /// <param name="Value">The Value</param>
+    public static void Write(string filename, string section, string key, string? Value)
     {
         if (Value == null)
             return;
@@ -42,12 +63,20 @@ public class ConfigINI
         }
         var parser = new FileIniDataParser();
         IniData data = parser.ReadFile(filename, System.Text.Encoding.UTF8);
-        data[category][section] = Value;
+        data[section][key] = Value;
         parser.WriteFile(filename, data, System.Text.Encoding.UTF8);
     }
 
-    public static void Write<T>(string filename, string category, string section, T Value) where T : IConvertible
+    /// <summary>
+    /// Write a <paramref name="Value"/> of Type <typeparamref name="T"/> to the <paramref name="filename"/> with a Key of <paramref name="key"/> and a Section as <paramref name="section"/>
+    /// </summary>
+    /// <typeparam name="T">A Type that has <see cref="IConvertible"/></typeparam>
+    /// <param name="filename">FileName to write to</param>
+    /// <param name="section">INI Section</param>
+    /// <param name="key">INI Key</param>
+    /// <param name="Value">The Value</param>
+    public static void Write<T>(string filename, string section, string key, T Value) where T : IConvertible
     {
-        Write(filename, category, section, Value.ToString());
+        Write(filename, section, key, Value.ToString());
     }
 }

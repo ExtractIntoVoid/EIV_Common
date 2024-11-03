@@ -12,7 +12,7 @@ public interface IUser
     /// 
     /// Only if <see cref="IPlatform.PlatformType"/> is <see cref="PlatformType.Platform_EPIC"/>
     /// </summary>
-    /// <param name="loginData">Login Data for Loggning in</param>
+    /// <param name="loginData">Login Data for Logging in</param>
     public void Login(object loginData);
 
     /// <summary>

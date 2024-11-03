@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace EIV_Common.LobbyPackets;
+namespace EIV_Common.Common;
 
 public class MinMax<T> where T : IMinMaxValue<T>
 {
@@ -12,7 +12,7 @@ public class MinMax<T> where T : IMinMaxValue<T>
 
     public MinMax(T min, T max)
     {
-        Min = min; 
+        Min = min;
         Max = max;
     }
 
