@@ -1,0 +1,41 @@
+name: Build EIV_Common
+
+on:
+  push:
+    paths-ignore:
+      - '**/*.md'
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+  workflow_dispatch:
+    # allows manual trigger
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+        source-url: ${{ secrets.EIV_NUGET }}
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.GH_READ_NUGET }}
+    - name: Godot Nuget
+      uses: chickensoft-games/next-godot-csproj-version@v1
+      id: next-version
+      with:
+        project-version: 0.0.0
+        godot-version: 4.3.0
+        bump: "patch"
+    - name: Publish
+      run: dotnet publish EIV_Common.csproj -c Release -o Out
+    - name: Pack
+      run: dotnet pack EIV_Common.csproj -c Release -o Out
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: EIV_Common
+        path: Out
+        if-no-files-found: error
