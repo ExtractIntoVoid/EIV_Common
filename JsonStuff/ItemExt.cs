@@ -20,6 +20,6 @@ public static class ItemExt
 
     public static bool HasValidAssetPath(this IItem item)
     {
-        return Godot.FileAccess.FileExists(item.AssetPath);
+        return Godot.FileAccess.FileExists(item.AssetPath) || Godot.ResourceLoader.Exists(item.AssetPath);
     }
 }
