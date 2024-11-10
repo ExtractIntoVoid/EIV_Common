@@ -5,10 +5,10 @@ namespace EIV_Common.JsonStuff;
 
 public class ItemRemake
 {
-    public static List<IItem> ItemRemaker(List<ItemRecreator> itemRecreator)
+    public static List<IItem> ItemRemaker(List<ItemRecreator> itemsToRecreate)
     {
         var ret = new List<IItem>();
-        foreach (var item in itemRecreator)
+        foreach (var item in itemsToRecreate)
         {
             var remadeItem = ItemRemaker(item);
             if (remadeItem == null)

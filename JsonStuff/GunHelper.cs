@@ -4,28 +4,22 @@ namespace EIV_Common.JsonStuff;
 
 public static class GunHelper
 {
-    public static bool CheckMagazineCompatible(this IGun gun, string MagazineId)
+    public static bool CheckMagazineCompatible(this IGun gun, string magazineId)
     {
-        if (gun == null)
-            return false;
-
-        var magazine = ItemMaker.CreateItem<IMagazine>(MagazineId);
+        var magazine = ItemMaker.CreateItem<IMagazine>(magazineId);
         if (magazine == null)
             return false;
 
-        return gun.MagazineSupport.Contains(MagazineId) || gun.MagazineSupport.Intersect(magazine.Tags).Any();
+        return gun.MagazineSupport.Contains(magazineId) || gun.MagazineSupport.Intersect(magazine.Tags).Any();
     }
 
-    public static bool TryCreateMagazine(this IGun gun, string MagazineId)
+    public static bool TryCreateMagazine(this IGun gun, string magazineId)
     {
-        if (gun == null)
-            return false;
-
-        if (!gun.CheckMagazineCompatible(MagazineId))
+        if (!gun.CheckMagazineCompatible(magazineId))
             return false;
 
 
-        var magazine = ItemMaker.CreateItem<IMagazine>(MagazineId);
+        var magazine = ItemMaker.CreateItem<IMagazine>(magazineId);
         if (magazine == null)
             return false;
 
@@ -33,39 +27,33 @@ public static class GunHelper
         return true;
     }
 
-    public static bool TryInsertMagazine(this IGun gun, string MagazineId, string AmmoId, uint AmmoToInsert)
+    public static bool TryInsertMagazine(this IGun gun, string magazineId, string ammoId, uint ammoToInsert)
     {
-        if (gun == null)
-            return false;
-
-        if (!gun.CheckMagazineCompatible(MagazineId))
+        if (!gun.CheckMagazineCompatible(magazineId))
             return false;
 
 
-        var magazine = ItemMaker.CreateItem<IMagazine>(MagazineId);
+        var magazine = ItemMaker.CreateItem<IMagazine>(magazineId);
         if (magazine == null)
             return false;
 
-        if (!magazine.TryInsertAmmos(AmmoId, AmmoToInsert))
+        if (!magazine.TryInsertAmmos(ammoId, ammoToInsert))
             return false;
         gun.Magazine = magazine;
         return true;
     }
 
-    public static bool TryInsertMagazine(this IGun gun, string MagazineId, string AmmoId)
+    public static bool TryInsertMagazine(this IGun gun, string magazineId, string ammoId)
     {
-        if (gun == null)
-            return false;
-
-        if (!gun.CheckMagazineCompatible(MagazineId))
+        if (!gun.CheckMagazineCompatible(magazineId))
             return false;
 
 
-        var magazine = ItemMaker.CreateItem<IMagazine>(MagazineId);
+        var magazine = ItemMaker.CreateItem<IMagazine>(magazineId);
         if (magazine == null)
             return false;
 
-        if (!magazine.TryInsertAmmo(AmmoId))
+        if (!magazine.TryInsertAmmo(ammoId))
             return false;
         gun.Magazine = magazine;
         return true;

@@ -2,28 +2,20 @@
 
 namespace EIV_Common.Coroutines;
 
-public struct Coroutine : IEquatable<Coroutine>, IEqualityComparer<Coroutine>
+public struct Coroutine(IEnumerator<double> enumerator, CoroutineType type)
+    : IEquatable<Coroutine>, IEqualityComparer<Coroutine>
 {
-    public IEnumerator<double> Enumerator;
-    public bool IsRunning;
-    public bool ShouldKill;
+    public IEnumerator<double> Enumerator = enumerator;
+    public bool IsRunning = true;
+    public bool ShouldKill = false;
     public bool ShouldPause;
-    public bool IsSuccess;
-    public CoroutineType CoroutineType;
-    IEnumerator<double> BaseEnumerator;
-    public Coroutine(IEnumerator<double> enumerator, CoroutineType type)
-    {
-        Enumerator = enumerator;
-        BaseEnumerator = enumerator;
-        IsRunning = true;
-        ShouldKill = false;
-        CoroutineType = type;
-        IsSuccess = false;
-    }
+    public bool IsSuccess = false;
+    public readonly CoroutineType CoroutineType = type;
+    readonly IEnumerator<double> _baseEnumerator = enumerator;
 
     public override int GetHashCode()
     {
-        return BaseEnumerator != null ? BaseEnumerator.GetHashCode() : 0;
+        return _baseEnumerator != null ? _baseEnumerator.GetHashCode() : 0;
     }
 
     public bool Equals(Coroutine other)

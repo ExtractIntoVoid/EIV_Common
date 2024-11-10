@@ -4,65 +4,52 @@ namespace EIV_Common.JsonStuff;
 
 public static class RigHelper
 {
-    public static bool CheckCompatibleArmorPlate(this IRig rig, string ArmorPlateId)
+    public static bool CheckCompatibleArmorPlate(this IRig rig, string armorPlateId)
     {
-        if (rig == null)
-            return false;
-
         // If this emtpy means we accept every plate!
         if (rig.ArmorPlateAccepted.Count == 0)
             return true;
 
         //  alternatively we check if it contains
-        return rig.ArmorPlateAccepted.Contains(ArmorPlateId);
+        return rig.ArmorPlateAccepted.Contains(armorPlateId);
     }
 
-    public static bool CheckCompatibleItemType(this IRig rig, string ItemId)
+    public static bool CheckCompatibleItemType(this IRig rig, string itemId)
     {
-        if (rig == null)
-            return false;
-
         // If this emtpy means we accept item!
         if (rig.ItemTypesAccepted.Count == 0)
             return true;
 
         //  alternatively we check if it contains
-        return rig.ItemTypesAccepted.Contains(ItemId);
+        return rig.ItemTypesAccepted.Contains(itemId);
     }
 
-    public static bool CheckCompatibleItem(this IRig rig, string ItemId)
+    public static bool CheckCompatibleItem(this IRig rig, string itemId)
     {
-        if (rig == null)
-            return false;
-
         // If this emtpy means we accept every plate!
         if (rig.SpecificItemsAccepted.Count == 0)
             return true;
 
         //  alternatively we check if it contains
-        return rig.SpecificItemsAccepted.Contains(ItemId);
+        return rig.SpecificItemsAccepted.Contains(itemId);
     }
 
 
-    public static bool TrySetArmorPlate(this IRig rig, string ArmorPlateId)
+    public static bool TrySetArmorPlate(this IRig rig, string armorPlateId)
     {
-        if (rig == null) return false;
-
-        if (!rig.CheckCompatibleArmorPlate(ArmorPlateId))
+        if (!rig.CheckCompatibleArmorPlate(armorPlateId))
             return false;
 
-        rig.PlateSlotId = ArmorPlateId;
+        rig.PlateSlotId = armorPlateId;
         return true;
     }
 
-    public static bool TryAddItem(this IRig rig, string ItemId)
+    public static bool TryAddItem(this IRig rig, string itemId)
     {
-        if (rig == null) return false;
-
-        if (!rig.CheckCompatibleItem(ItemId))
+        if (!rig.CheckCompatibleItem(itemId))
             return false;
 
-        var item = ItemMaker.MakeNewItem(ItemId);
+        var item = ItemMaker.MakeNewItem(itemId);
         if (item == null)
             return false;
 
@@ -72,13 +59,13 @@ public static class RigHelper
         if (rig.ItemIds.Count == rig.MaxItem)
             return false;
 
-        rig.ItemIds.Add(ItemId);
+        rig.ItemIds.Add(itemId);
         return true;
     }
 
-    public static bool TryAddItems(this IRig rig, List<string> ItemId)
+    public static bool TryAddItems(this IRig rig, IList<string> itemId)
     {
-        foreach (var item in ItemId)
+        foreach (var item in itemId)
         {
             if (!rig.TryAddItem(item))
                 return false;

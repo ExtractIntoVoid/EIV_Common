@@ -10,7 +10,7 @@ public interface IUser
     /// <summary>
     /// Called for login.
     /// 
-    /// Only if <see cref="IPlatform.PlatformType"/> is <see cref="PlatformType.Platform_EPIC"/>
+    /// Only if <see cref="IPlatform.PlatformType"/> is <see cref="PlatformType.PlatformEpic"/>
     /// </summary>
     /// <param name="loginData">Login Data for Logging in</param>
     public void Login(object loginData);
@@ -23,12 +23,12 @@ public interface IUser
     /// <summary>
     /// Getting User Id
     /// </summary>
-    /// <returns>The User Id on that platform as a string</returns>
-    public string GetUserID();
+    /// <returns>The UserId on that platform as a string</returns>
+    public string GetUserId();
 
     /// <summary>
-    /// Getting User Name
+    /// Getting UserName
     /// </summary>
-    /// <returns>The User Name on that platform as a string</returns>
+    /// <returns>The UserName on that platform as a string</returns>
     public string GetUserName();
 }

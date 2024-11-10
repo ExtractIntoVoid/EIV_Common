@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace EIV_Common.InfoJSON;
+namespace EIV_Common.InfoJson;
 
-public class ServerInfoJSON
+public class ServerInfoJson
 {
     public ConnectionInfo Connection { get; set; } = new();
 

@@ -2,21 +2,13 @@
 
 namespace EIV_Common.Common;
 
-public class MinMax<T> where T : IMinMaxValue<T>
+public class MinMax<T>(T min, T max)
+    where T : IMinMaxValue<T>
 {
-    public MinMax()
+    public MinMax() : this(T.MinValue, T.MaxValue)
     {
-        Min = T.MinValue;
-        Max = T.MaxValue;
     }
 
-    public MinMax(T min, T max)
-    {
-        Min = min;
-        Max = max;
-    }
-
-    public T Min { get; set; }
-    public T Max { get; set; }
-
+    public T Min { get; set; } = min;
+    public T Max { get; set; } = max;
 }

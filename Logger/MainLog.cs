@@ -2,7 +2,7 @@
 
 namespace EIV_Common.Logger;
 
-public class MainLog
+public static class MainLog
 {
     public static ILogger? logger = null;
 

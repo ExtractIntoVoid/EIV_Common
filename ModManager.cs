@@ -13,8 +13,6 @@ namespace EIV_Common;
 
 public class ModManager
 {
-    public static Dictionary<string, List<string>> ModsFiles = new();
-
     public delegate void LoadModWithTypeDelegate(Type? retType, object? obj);
 
     public static void Init()
@@ -32,29 +30,25 @@ public class ModManager
         MainLoader.LoadDependencies();
     }
 
-    public static void LoadAssets_Unpack(string Dir)
+    public static void LoadAssets_Unpack(string dir)
     {
-        if (!Directory.Exists( Path.Combine(Dir, "Assets", "Items") ))
+        if (!Directory.Exists( Path.Combine(dir, "Assets", "Items") ))
             return;
 
-        foreach (var json in Directory.GetFiles( Path.Combine(Dir, "Assets", "Items") , "*.json", SearchOption.AllDirectories))
+        foreach (var json in Directory.GetFiles( Path.Combine(dir, "Assets", "Items") , "*.json", SearchOption.AllDirectories))
         {
-            var item = ConvertHelper.ConvertFromString( File.ReadAllText(json) );
+            var item = File.ReadAllText(json).ConvertFromString();
             if (item != null)
             {
-                bool ret = Storage.Items.TryAdd( item.BaseID, item);
-                if (!ret)
-                    continue;
+                Storage.Items.TryAdd( item.BaseID, item);
             }
         }
-        foreach (var json in Directory.GetFiles(Path.Combine(Dir, "Assets", "Effects"), "*.json", SearchOption.AllDirectories))
+        foreach (var json in Directory.GetFiles(Path.Combine(dir, "Assets", "Effects"), "*.json", SearchOption.AllDirectories))
         {
             var effect = JsonConvert.DeserializeObject<IEffect>(File.ReadAllText(json), ConvertHelper.GetSerializerSettings());
             if (effect != null)
             {
-                bool ret = Storage.Effects.TryAdd(effect.EffectID, effect);
-                if (!ret)
-                    continue;
+                Storage.Effects.TryAdd(effect.EffectID, effect);
             }
         }
     }
@@ -64,12 +58,10 @@ public class ModManager
         var items = reader.Pack.FileNames.Where(x => x.Contains(".json") && x.Contains("Assets/Items") );
         foreach (var item in items)
         {
-            var real_item = ConvertHelper.ConvertFromString( System.Text.Encoding.UTF8.GetString( reader.GetFileData(item) ) );
-            if (real_item != null)
+            var realItem = System.Text.Encoding.UTF8.GetString( reader.GetFileData(item) ).ConvertFromString();
+            if (realItem != null)
             {
-                bool ret = Storage.Items.TryAdd( real_item.BaseID, real_item);
-                if (!ret)
-                    continue;
+                Storage.Items.TryAdd( realItem.BaseID, realItem);
             }
         }
     }
@@ -86,19 +78,19 @@ public class ModManager
 
     public static void LoadMod_JsonLib(Assembly assembly)
     {
-        LoadModWithTypeDelegate @delegate = (Type? retType, object? obj) =>
+        LoadMod(typeof(IJsonLibConverter), assembly, Delegate);
+        return;
+
+        void Delegate(Type? retType, object? obj)
         {
             var jsonLib = (IJsonLibConverter?)obj;
-            if (jsonLib == null)
-                return;
+            if (jsonLib == null) return;
             JsonLibConverters.ModdedConverters.Add(jsonLib);
-        };
-        LoadMod(typeof(IJsonLibConverter), assembly, @delegate);
+        }
     }
 
     public static void DeInit()
     {
-        ModsFiles.Clear();
         Storage.ClearAll();
         MainLoader.DeInit();
         Debugger.ClearLogger();

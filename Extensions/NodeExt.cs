@@ -4,12 +4,10 @@ namespace EIV_Common.Extensions;
 
 public static class NodeExt
 {
-    public static void SetMP(this Node node, int NetId)
+    public static void SetMP(this Node node, int netId)
     {
-        if (node == null)
-            return;
-        node.SetMultiplayerAuthority(NetId);
+        node.SetMultiplayerAuthority(netId);
         if (node.HasNode("MSync"))
-            node.GetNode<MultiplayerSynchronizer>("MSync").SetMultiplayerAuthority(NetId);
+            node.GetNode<MultiplayerSynchronizer>("MSync").SetMultiplayerAuthority(netId);
     }
 }

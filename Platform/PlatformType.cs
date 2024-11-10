@@ -12,9 +12,9 @@ public enum PlatformType
     [EnumMember(Value = "unknown")]
     Unknown = -1,
     [EnumMember(Value = "free")]
-    Platform_FREE = 0,
+    PlatformFree = 0,
     [EnumMember(Value = "steam")]
-    Platform_STEAM = 1,
+    PlatformSteam = 1,
     [EnumMember(Value = "epic")]
-    Platform_EPIC = 2,
+    PlatformEpic = 2,
 }

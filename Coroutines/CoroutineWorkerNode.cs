@@ -6,24 +6,24 @@ namespace EIV_Common.Coroutines;
 public partial class CoroutineWorkerNode : Node
 {
     static object? _tmpRef;
-    static Func<IEnumerator<double>, IEnumerator<double>>? ReplacementFunction;
-    static CoroutineWorkerNode? instance;
+    static Func<IEnumerator<double>, IEnumerator<double>>? _replacementFunction;
+    static CoroutineWorkerNode? _instance;
     public static CoroutineWorkerNode Instance
     {
         get
         {
-            if (instance == null)
-                return instance = new();
-            return instance;
+            if (_instance == null)
+                return _instance = new();
+            return _instance;
         }
         set
         {
-            instance = value;
+            _instance = value;
         }
     }
-    List<double> Delays = [];
-    List<Coroutine> ProcessCoroutines = [];
-    List<Coroutine> PhysicsCoroutines = [];
+    List<double> _delays = [];
+    List<Coroutine> _processCoroutines = [];
+    List<Coroutine> _physicsCoroutines = [];
 
     private readonly Godot.Mutex _mutex = new();
 
@@ -51,34 +51,31 @@ public partial class CoroutineWorkerNode : Node
     #endregion
     #region Needed stuff for running
 
-    public void Quit()
-    {
-        Kill();
-    }
+    public void Quit() => Kill();
 
     void ProcessCorUpdate(double deltaTime)
     {
         _mutex.Lock();
         {
-            for (int i = 0; i < Instance.ProcessCoroutines.Count; i++)
+            for (int i = 0; i < Instance._processCoroutines.Count; i++)
             {
-                var item = Instance.ProcessCoroutines[i];
-                if (Instance.Delays[i] > 0f)
-                    Instance.Delays[i] -= deltaTime;
-                if (Instance.Delays[i] <= 0f)
+                var item = Instance._processCoroutines[i];
+                if (Instance._delays[i] > 0f)
+                    Instance._delays[i] -= deltaTime;
+                if (Instance._delays[i] <= 0f)
                 {
                     CoroutineWork(ref item, i);
                 }
-                if (double.IsNaN(Instance.Delays[i]))
+                if (double.IsNaN(Instance._delays[i]))
                 {
-                    if (ReplacementFunction != null)
+                    if (_replacementFunction != null)
                     {
-                        item.Enumerator = ReplacementFunction(item.Enumerator);
+                        item.Enumerator = _replacementFunction(item.Enumerator);
                         CoroutineWork(ref item, i);
-                        ReplacementFunction = null;
+                        _replacementFunction = null;
                     }
                 }
-                Instance.ProcessCoroutines[i] = item;
+                Instance._processCoroutines[i] = item;
             }
             _mutex.Unlock();
         }
@@ -89,25 +86,25 @@ public partial class CoroutineWorkerNode : Node
     {
         _mutex.Lock();
         {
-            for (int i = 0; i < Instance.PhysicsCoroutines.Count; i++)
+            for (int i = 0; i < Instance._physicsCoroutines.Count; i++)
             {
-                var item = Instance.PhysicsCoroutines[i];
-                if (Instance.Delays[i] > 0f)
-                    Instance.Delays[i] -= deltaTime;
-                if (Instance.Delays[i] <= 0f)
+                var item = Instance._physicsCoroutines[i];
+                if (Instance._delays[i] > 0f)
+                    Instance._delays[i] -= deltaTime;
+                if (Instance._delays[i] <= 0f)
                 {
                     CoroutineWork(ref item, i);
                 }
-                if (double.IsNaN(Instance.Delays[i]))
+                if (double.IsNaN(Instance._delays[i]))
                 {
-                    if (ReplacementFunction != null)
+                    if (_replacementFunction != null)
                     {
-                        item.Enumerator = ReplacementFunction(item.Enumerator);
+                        item.Enumerator = _replacementFunction(item.Enumerator);
                         CoroutineWork(ref item, i);
-                        ReplacementFunction = null;
+                        _replacementFunction = null;
                     }
                 }
-                Instance.PhysicsCoroutines[i] = item;
+                Instance._physicsCoroutines[i] = item;
             }
             _mutex.Unlock();
         }
@@ -118,22 +115,22 @@ public partial class CoroutineWorkerNode : Node
     {
         _mutex.Lock();
         {
-            for (int i = 0; i < Instance.ProcessCoroutines.Count; i++)
+            for (int i = 0; i < Instance._processCoroutines.Count; i++)
             {
-                var item = Instance.ProcessCoroutines[i];
+                var item = Instance._processCoroutines[i];
                 if (item.ShouldKill)
                 {
-                    Instance.ProcessCoroutines.Remove(item);
-                    Instance.Delays.RemoveAt(i);
+                    Instance._processCoroutines.Remove(item);
+                    Instance._delays.RemoveAt(i);
                 }
             }
-            for (int i = 0; i < Instance.PhysicsCoroutines.Count; i++)
+            for (int i = 0; i < Instance._physicsCoroutines.Count; i++)
             {
-                var item = Instance.PhysicsCoroutines[i];
+                var item = Instance._physicsCoroutines[i];
                 if (item.ShouldKill)
                 {
-                    Instance.PhysicsCoroutines.Remove(item);
-                    Instance.Delays.RemoveAt(i);
+                    Instance._physicsCoroutines.Remove(item);
+                    Instance._delays.RemoveAt(i);
                 }
             }
             _mutex.Unlock();
@@ -160,73 +157,73 @@ public partial class CoroutineWorkerNode : Node
     private bool MoveNext(ref Coroutine coroutine, int index)
     {
         bool result = coroutine.Enumerator.MoveNext();
-        Delays[index] = coroutine.Enumerator.Current;
+        _delays[index] = coroutine.Enumerator.Current;
         return result;
     }
     #endregion
     #region Coroutine Creators
-    public static Coroutine StartCoroutine(IEnumerator<double> objects, CoroutineType type = CoroutineType.Process)
+    public static Coroutine? StartCoroutine(IEnumerator<double> objects, CoroutineType type = CoroutineType.Process)
     {
         Coroutine coroutine = new(objects, type);
         switch (type)
         {
             case CoroutineType.Process:
-                Instance.ProcessCoroutines.Add(coroutine);
+                Instance._processCoroutines.Add(coroutine);
                 break;
             case CoroutineType.PhysicsProcess:
-                Instance.PhysicsCoroutines.Add(coroutine);
-                break;
+                Instance._physicsCoroutines.Add(coroutine);
+                break; 
             default:
-                break;
+                return null;
         }
         
-        Instance.Delays.Add(0);
+        Instance._delays.Add(0);
         return coroutine;
     }
-    public static Coroutine CallDelayed(TimeSpan timeSpan, Action action, CoroutineType type = CoroutineType.Process)
+    public static Coroutine? CallDelayed(TimeSpan timeSpan, Action action, CoroutineType type = CoroutineType.Process)
     {
-        return StartCoroutine(Instance._DelayedCall(timeSpan, action), type);
+        return StartCoroutine(_DelayedCall(timeSpan, action), type);
     }
-    public static Coroutine CallContinuously(Action action, CoroutineType type = CoroutineType.Process)
+    public static Coroutine? CallContinuously(Action action, CoroutineType type = CoroutineType.Process)
     {
-        return StartCoroutine(Instance._CallContinuously(TimeSpan.Zero, action), type);
+        return StartCoroutine(_CallContinuously(TimeSpan.Zero, action), type);
     }
-    public static Coroutine CallPeriodically(TimeSpan timeSpan, Action action, CoroutineType type = CoroutineType.Process)
+    public static Coroutine? CallPeriodically(TimeSpan timeSpan, Action action, CoroutineType type = CoroutineType.Process)
     {
-        return StartCoroutine(Instance._CallContinuously(timeSpan, action), type);
+        return StartCoroutine(_CallContinuously(timeSpan, action), type);
     }
     #endregion
     #region Static Helpers
-    private static IEnumerator<double> ReturnTmpRefForRepFunc(IEnumerator<double> coptr)
+    private static IEnumerator<double> ReturnTmpRefForRepFunc(IEnumerator<double> coroutineEnumerator)
     {
         if (_tmpRef == null)
             return _Empty();
-        if (_tmpRef is IEnumerator<double> that && that != null)
+        if (_tmpRef is IEnumerator<double> that)
             return that;
         return _Empty();
     }
 
-    private static IEnumerator<double> WaitUntilFalseHelper(IEnumerator<double> coptr)
+    private static IEnumerator<double> WaitUntilFalseHelper(IEnumerator<double> coroutineEnumerator)
     {
-        return _StartWhenDone(_tmpRef as Func<bool>, true, coptr);
+        return _StartWhenDone(_tmpRef as Func<bool>, true, coroutineEnumerator);
     }
 
-    private static IEnumerator<double> WaitUntilTrueHelper(IEnumerator<double> coptr)
+    private static IEnumerator<double> WaitUntilTrueHelper(IEnumerator<double> coroutineEnumerator)
     {
-        return _StartWhenDone(_tmpRef as Func<bool>, false, coptr);
+        return _StartWhenDone(_tmpRef as Func<bool>, false, coroutineEnumerator);
     }
-    private static IEnumerator<double> WaitUntilTHelper<T>(IEnumerator<double> coptr) where T : INumber<T>
+    private static IEnumerator<double> WaitUntilTHelper<T>(IEnumerator<double> coroutineEnumerator) where T : INumber<T>
     {
-        return _StartWhenTDone<T>(_tmpRef as Func<T>, T.Zero, coptr);
+        return _StartWhenTDone<T>(_tmpRef as Func<T>, T.Zero, coroutineEnumerator);
     }
-    private static IEnumerator<double> StartAfterCoroutineHelper(IEnumerator<double> coptr)
+    private static IEnumerator<double> StartAfterCoroutineHelper(IEnumerator<double> coroutineEnumerator)
     {
-        return _StartWhenDone((Coroutine?)_tmpRef, coptr);
+        return _StartWhenDone((Coroutine?)_tmpRef, coroutineEnumerator);
     }
 
-    private static IEnumerator<double> WaitUntilSignalHelper(IEnumerator<double> coptr)
+    private static IEnumerator<double> WaitUntilSignalHelper(IEnumerator<double> coroutineEnumerator)
     {
-        return _StartWhenDoneSignal((ValueTuple<GodotObject, string>?)_tmpRef, coptr);
+        return _StartWhenDoneSignal((ValueTuple<GodotObject, string>?)_tmpRef, coroutineEnumerator);
     }
 
     private static IEnumerator<double> _Empty()
@@ -244,7 +241,7 @@ public partial class CoroutineWorkerNode : Node
             yield return double.NegativeInfinity;
         }
         _tmpRef = pausedProc;
-        ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(ReturnTmpRefForRepFunc);
+        _replacementFunction = ReturnTmpRefForRepFunc;
         yield return float.NaN;
     }
 
@@ -257,7 +254,7 @@ public partial class CoroutineWorkerNode : Node
             yield return double.NegativeInfinity;
         }
         _tmpRef = pausedProc;
-        ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(ReturnTmpRefForRepFunc);
+        _replacementFunction = ReturnTmpRefForRepFunc;
         yield return float.NaN;
     }
 
@@ -272,60 +269,61 @@ public partial class CoroutineWorkerNode : Node
             yield return double.NegativeInfinity;
         }
         _tmpRef = pausedProc;
-        ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(ReturnTmpRefForRepFunc);
+        _replacementFunction = ReturnTmpRefForRepFunc;
         yield return double.NaN;
     }
 
 
-    private static IEnumerator<double> _StartWhenDoneSignal(ValueTuple<GodotObject, string>? ObjSignal, IEnumerator<double> pausedProc)
+    private static IEnumerator<double> _StartWhenDoneSignal(ValueTuple<GodotObject, string>? objSignal, IEnumerator<double> pausedProc)
     {
-        if (ObjSignal == null)
+        if (objSignal == null)
             yield break;
-        ObjSignal.Value.Item1.Connect(ObjSignal.Value.Item2, Callable.From(() => { GD.Print("Signal emitted! " + ObjSignal.Value.Item2 ); } ), (uint)ConnectFlags.OneShot);
-        while (ObjSignal.Value.Item1.ToSignal(ObjSignal.Value.Item1, ObjSignal.Value.Item2).IsCompleted != true)
+        objSignal.Value.Item1.Connect(objSignal.Value.Item2, Callable.From(() => { GD.Print("Signal emitted! " + objSignal.Value.Item2 ); } ), (uint)ConnectFlags.OneShot);
+        while (objSignal.Value.Item1.ToSignal(objSignal.Value.Item1, objSignal.Value.Item2).IsCompleted != true)
         {
             yield return double.NegativeInfinity;
         }
         _tmpRef = pausedProc;
-        ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(ReturnTmpRefForRepFunc);
+        _replacementFunction = ReturnTmpRefForRepFunc;
         yield return double.NaN;
     }
     #endregion
     #region IEnumerators
-    private IEnumerator<double> _DelayedCall(TimeSpan timeSpan, Action action)
+    private static IEnumerator<double> _DelayedCall(TimeSpan timeSpan, Action action)
     {
         yield return timeSpan.TotalSeconds;
         action();
     }
-    private IEnumerator<double> _CallContinuously(TimeSpan timeSpan, Action action)
+    private static IEnumerator<double> _CallContinuously(TimeSpan timeSpan, Action action)
     {
         while (true)
         {
             yield return timeSpan.TotalSeconds;
             action();
         }
+        // ReSharper disable once IteratorNeverReturns
     }
     #endregion
     #region Static Floats
     public static double WaitUntilFalse(Func<bool> evaluatorFunc)
     {
-        if (evaluatorFunc == null || !evaluatorFunc())
+        if (!evaluatorFunc())
         {
             return double.NaN;
         }
         _tmpRef = evaluatorFunc;
-        ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(WaitUntilFalseHelper);
+        _replacementFunction = WaitUntilFalseHelper;
         return double.NaN;
     }
 
     public static double WaitUntilTrue(Func<bool> evaluatorFunc)
     {
-        if (evaluatorFunc == null || evaluatorFunc())
+        if (evaluatorFunc())
         {
             return double.NaN;
         }
         _tmpRef = evaluatorFunc;
-        ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(WaitUntilTrueHelper);
+        _replacementFunction = WaitUntilTrueHelper;
         return double.NaN;
     }
 
@@ -336,7 +334,7 @@ public partial class CoroutineWorkerNode : Node
             return double.NaN;
         }
         _tmpRef = evaluatorFunc;
-        ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(WaitUntilTHelper<T>);
+        _replacementFunction = WaitUntilTHelper<T>;
         return double.NaN;
     }
 
@@ -348,18 +346,18 @@ public partial class CoroutineWorkerNode : Node
             return 0;
         }
         _tmpRef = cor;
-        ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(StartAfterCoroutineHelper);
+        _replacementFunction = StartAfterCoroutineHelper;
         return double.NaN;
     }
 
-    public static double WaitUntilSignal(GodotObject godotObject, string Signal) 
+    public static double WaitUntilSignal(GodotObject godotObject, string signal) 
     {
-        if (godotObject.ToSignal(godotObject, Signal).IsCompleted)
+        if (godotObject.ToSignal(godotObject, signal).IsCompleted)
         {
             return double.NaN;
         }
-        _tmpRef = new ValueTuple<GodotObject, string>(godotObject, Signal);
-        ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(WaitUntilSignalHelper);
+        _tmpRef = new ValueTuple<GodotObject, string>(godotObject, signal);
+        _replacementFunction = WaitUntilSignalHelper;
         return double.NaN;
     }
 
@@ -389,14 +387,14 @@ public partial class CoroutineWorkerNode : Node
             switch (coroutine.CoroutineType)
             {
                 case CoroutineType.Process:
-                    cor = Instance.ProcessCoroutines[index];
+                    cor = Instance._processCoroutines[index];
                     cor.ShouldKill = true;
-                    Instance.ProcessCoroutines[index] = cor;
+                    Instance._processCoroutines[index] = cor;
                     break;
                 case CoroutineType.PhysicsProcess:
-                    cor = Instance.PhysicsCoroutines[index];
+                    cor = Instance._physicsCoroutines[index];
                     cor.ShouldKill = true;
-                    Instance.PhysicsCoroutines[index] = cor;
+                    Instance._physicsCoroutines[index] = cor;
                     break;
                 default:
                     break;
@@ -410,9 +408,9 @@ public partial class CoroutineWorkerNode : Node
         switch (coroutine.CoroutineType)
         {
             case CoroutineType.Process:
-                return Instance.ProcessCoroutines.FindIndex(x => x.Equals(coroutine));
+                return Instance._processCoroutines.FindIndex(x => x.Equals(coroutine));
             case CoroutineType.PhysicsProcess:
-                return Instance.PhysicsCoroutines.FindIndex(x => x.Equals(coroutine));
+                return Instance._physicsCoroutines.FindIndex(x => x.Equals(coroutine));
             default:
                 return -1;
         }
@@ -423,11 +421,40 @@ public partial class CoroutineWorkerNode : Node
         switch (coroutine.CoroutineType)
         {
             case CoroutineType.Process:
-                return Instance.ProcessCoroutines.Where(x => x.Equals(coroutine)).FirstOrDefault();
+                return Instance._processCoroutines.FirstOrDefault(x => x.Equals(coroutine));
             case CoroutineType.PhysicsProcess:
-                return Instance.PhysicsCoroutines.Where(x => x.Equals(coroutine)).FirstOrDefault();
+                return Instance._physicsCoroutines.FirstOrDefault(x => x.Equals(coroutine));
             default:
                 return default;
+        }
+    }
+    
+    public static void PauseCoroutineInstance(Coroutine coroutine)
+    {
+        Instance.PauseCoroutine(coroutine);
+    }
+    public void PauseCoroutine(Coroutine coroutine)
+    {        
+        var index = GetCoroutineIndex(coroutine);
+        if (index == -1)
+            return;
+        _mutex.Lock();
+        {
+            Coroutine cor;
+            switch (coroutine.CoroutineType)
+            {
+                case CoroutineType.Process:
+                    cor = Instance._processCoroutines[index];
+                    cor.ShouldPause = true;
+                    Instance._processCoroutines[index] = cor;
+                    break;
+                case CoroutineType.PhysicsProcess:
+                    cor = Instance._physicsCoroutines[index];
+                    cor.ShouldPause = true;
+                    Instance._physicsCoroutines[index] = cor;
+                    break;
+            }
+            _mutex.Unlock();
         }
     }
 

@@ -42,15 +42,15 @@ public class ConfigINI
     }
 
     /// <summary>
-    /// Write a <paramref name="Value"/> to the <paramref name="filename"/> with a Key of <paramref name="key"/> and a Section as <paramref name="section"/>
+    /// Write a <paramref name="value"/> to the <paramref name="filename"/> with a Key of <paramref name="key"/> and a Section as <paramref name="section"/>
     /// </summary>
     /// <param name="filename">FileName to write to</param>
     /// <param name="section">INI Section</param>
     /// <param name="key">INI Key</param>
-    /// <param name="Value">The Value</param>
-    public static void Write(string filename, string section, string key, string? Value)
+    /// <param name="value">The Value</param>
+    public static void Write(string filename, string section, string key, string? value)
     {
-        if (Value == null)
+        if (value == null)
             return;
         if (!File.Exists(filename))
         {
@@ -63,20 +63,20 @@ public class ConfigINI
         }
         var parser = new FileIniDataParser();
         IniData data = parser.ReadFile(filename, System.Text.Encoding.UTF8);
-        data[section][key] = Value;
+        data[section][key] = value;
         parser.WriteFile(filename, data, System.Text.Encoding.UTF8);
     }
 
     /// <summary>
-    /// Write a <paramref name="Value"/> of Type <typeparamref name="T"/> to the <paramref name="filename"/> with a Key of <paramref name="key"/> and a Section as <paramref name="section"/>
+    /// Write a <paramref name="value"/> of Type <typeparamref name="T"/> to the <paramref name="filename"/> with a Key of <paramref name="key"/> and a Section as <paramref name="section"/>
     /// </summary>
     /// <typeparam name="T">A Type that has <see cref="IConvertible"/></typeparam>
     /// <param name="filename">FileName to write to</param>
     /// <param name="section">INI Section</param>
     /// <param name="key">INI Key</param>
-    /// <param name="Value">The Value</param>
-    public static void Write<T>(string filename, string section, string key, T Value) where T : IConvertible
+    /// <param name="value">The Value</param>
+    public static void Write<T>(string filename, string section, string key, T value) where T : IConvertible
     {
-        Write(filename, section, key, Value.ToString());
+        Write(filename, section, key, value.ToString());
     }
 }

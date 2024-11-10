@@ -3,9 +3,9 @@ using Newtonsoft.Json;
 using EIV_Common.Platform;
 using EIV_Common.Extensions;
 
-namespace EIV_Common.InfoJSON;
+namespace EIV_Common.InfoJson;
 
-public class UserInfoJSON
+public class UserInfoJson
 {
     [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
     public PlatformType Platform { get; set; } = PlatformType.Unknown;

@@ -21,14 +21,14 @@ public interface IPlatform
 
     /// <summary>
     /// Getting a Node to add into the GameManager.
-    /// <br/> If null it will not adding it
+    /// <br/> If null it will not add it
     /// </summary>
     /// <returns>Null or a Node</returns>
     public Node? GetNode();
 
 
     /// <summary>
-    /// Getting the User related informations
+    /// Getting the User related information
     /// <br/> If not initialized or something wrong returns null.
     /// </summary>
     /// <returns>User</returns>
