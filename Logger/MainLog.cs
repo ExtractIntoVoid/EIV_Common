@@ -30,8 +30,8 @@ public static class MainLog
     /// </summary>
     public static void Close()
     {
-        if (logger != null) 
-        { 
+        if (logger != null)
+        {
             logger.Information("Application closed!");
             Log.CloseAndFlush();
             logger = null;

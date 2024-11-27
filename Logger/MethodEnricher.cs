@@ -8,7 +8,7 @@ public class MethodEnricher : ILogEventEnricher
 {
     public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
     {
-        StackTrace stackTrace = new StackTrace(true);
+        StackTrace stackTrace = new(true);
         StackFrame[] stackFrames = stackTrace.GetFrames();
         bool hasEmit = false;
         /*
@@ -27,13 +27,13 @@ public class MethodEnricher : ILogEventEnricher
         {
             if (stackFrames.Length >= 7)
             {
-                var method = stackFrames[7].GetMethod();
+                System.Reflection.MethodBase? method = stackFrames[7].GetMethod();
                 if (method == null)
                     goto END;
                 if (method.DeclaringType == null)
                     goto END;
                 methodName = method.DeclaringType.FullName + "." + method.Name;
-            }    
+            }
             else
             {
                 Console.WriteLine("error x <7");
@@ -43,19 +43,19 @@ public class MethodEnricher : ILogEventEnricher
         {
             if (stackFrames.Length >= 5)
             {
-                var method = stackFrames[5].GetMethod();
+                System.Reflection.MethodBase? method = stackFrames[5].GetMethod();
                 if (method == null)
                     goto END;
                 if (method.DeclaringType == null)
                     goto END;
                 methodName = method.DeclaringType.FullName + "." + method.Name;
-            }   
+            }
             else
             {
                 Console.WriteLine("error <5");
             }
         }
-        END:
+    END:
         logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("Method", methodName));
     }
 }

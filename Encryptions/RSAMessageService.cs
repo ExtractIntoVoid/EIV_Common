@@ -17,7 +17,7 @@ namespace EIV_Common.Encryptions
                 private_rsa.FromXmlString(File.ReadAllText("cert/rsa_private.xml"));
             File.WriteAllText("cert/rsa_private.xml", private_rsa.ToXmlString(true));
             privateService = new(private_rsa);
-            public_RSAServices = new();
+            public_RSAServices = [];
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace EIV_Common.Encryptions
         /// <param name="publicKey">RSA PublicKey</param>
         public static void AddRSA(string userId, byte[] publicKey)
         {
-            var rsa = RSA.Create(1024);
+            RSA rsa = RSA.Create(1024);
             rsa.ImportRSAPublicKey(publicKey, out _);
             AddRSA(userId, rsa);
         }
@@ -52,7 +52,7 @@ namespace EIV_Common.Encryptions
         /// <param name="xml">RSA exported as XML format</param>
         public static void AddRSA(string userId, string xml)
         {
-            var rsa = RSA.Create(1024);
+            RSA rsa = RSA.Create(1024);
             rsa.FromXmlString(xml);
             AddRSA(userId, rsa);
         }

@@ -14,7 +14,7 @@ public class ConfigINI
     /// <returns>Readed value or <see cref="string.Empty"/></returns>
     public static string Read(string filename, string section, string key)
     {
-        var parser = new FileIniDataParser();
+        FileIniDataParser parser = new();
         IniData data = parser.ReadFile(filename, System.Text.Encoding.UTF8);
         if (!data.Sections.ContainsSection(section))
             return string.Empty;
@@ -54,14 +54,14 @@ public class ConfigINI
             return;
         if (!File.Exists(filename))
         {
-            var path = Path.GetDirectoryName(filename);
+            string? path = Path.GetDirectoryName(filename);
             if (!string.IsNullOrEmpty(path))
             {
-                Directory.CreateDirectory(path); 
+                Directory.CreateDirectory(path);
             }
             File.WriteAllText(filename, ";TMP");
         }
-        var parser = new FileIniDataParser();
+        FileIniDataParser parser = new();
         IniData data = parser.ReadFile(filename, System.Text.Encoding.UTF8);
         data[section][key] = value;
         parser.WriteFile(filename, data, System.Text.Encoding.UTF8);

@@ -49,7 +49,7 @@ public static class RigHelper
         if (!rig.CheckCompatibleItem(itemId))
             return false;
 
-        var item = ItemMaker.MakeNewItem(itemId);
+        EIV_JsonLib.Base.ItemBase? item = ItemMaker.MakeNewItem(itemId);
         if (item == null)
             return false;
 
@@ -65,7 +65,7 @@ public static class RigHelper
 
     public static bool TryAddItems(this Rig rig, IList<string> itemId)
     {
-        foreach (var item in itemId)
+        foreach (string item in itemId)
         {
             if (!rig.TryAddItem(item))
                 return false;

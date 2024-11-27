@@ -108,9 +108,9 @@ namespace EIV_Common.Encryptions
 
         #region Methods_Helper
 
-        public static RsaService Create(RSAParameters parameters) => new RsaService(RSA.Create(parameters));
+        public static RsaService Create(RSAParameters parameters) => new(RSA.Create(parameters));
 
-        public static RsaService Create() => new RsaService(RSA.Create());
+        public static RsaService Create() => new(RSA.Create());
 
         // [keySize] ÷ 8 - [11 bytes for padding] = Result
         // Exsimple: [2048 key size] ÷ 8 - [11 bytes for padding] = 245
@@ -150,7 +150,7 @@ namespace EIV_Common.Encryptions
         {
             RSAParameters keyPriv;
             RSAParameters keyPub;
-            using (var rsa = RSA.Create(keySize))
+            using (RSA rsa = RSA.Create(keySize))
             {
                 keyPriv = rsa.ExportParameters(true);
                 keyPub = rsa.ExportParameters(false);

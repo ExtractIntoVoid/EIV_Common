@@ -59,7 +59,7 @@ public partial class CoroutineWorkerNode : Node
         {
             for (int i = 0; i < Instance._processCoroutines.Count; i++)
             {
-                var item = Instance._processCoroutines[i];
+                Coroutine item = Instance._processCoroutines[i];
                 if (Instance._delays[i] > 0f)
                     Instance._delays[i] -= deltaTime;
                 if (Instance._delays[i] <= 0f)
@@ -88,7 +88,7 @@ public partial class CoroutineWorkerNode : Node
         {
             for (int i = 0; i < Instance._physicsCoroutines.Count; i++)
             {
-                var item = Instance._physicsCoroutines[i];
+                Coroutine item = Instance._physicsCoroutines[i];
                 if (Instance._delays[i] > 0f)
                     Instance._delays[i] -= deltaTime;
                 if (Instance._delays[i] <= 0f)
@@ -117,7 +117,7 @@ public partial class CoroutineWorkerNode : Node
         {
             for (int i = 0; i < Instance._processCoroutines.Count; i++)
             {
-                var item = Instance._processCoroutines[i];
+                Coroutine item = Instance._processCoroutines[i];
                 if (item.ShouldKill)
                 {
                     Instance._processCoroutines.Remove(item);
@@ -126,7 +126,7 @@ public partial class CoroutineWorkerNode : Node
             }
             for (int i = 0; i < Instance._physicsCoroutines.Count; i++)
             {
-                var item = Instance._physicsCoroutines[i];
+                Coroutine item = Instance._physicsCoroutines[i];
                 if (item.ShouldKill)
                 {
                     Instance._physicsCoroutines.Remove(item);
@@ -172,11 +172,11 @@ public partial class CoroutineWorkerNode : Node
                 break;
             case CoroutineType.PhysicsProcess:
                 Instance._physicsCoroutines.Add(coroutine);
-                break; 
+                break;
             default:
                 return null;
         }
-        
+
         Instance._delays.Add(0);
         return coroutine;
     }
@@ -278,7 +278,7 @@ public partial class CoroutineWorkerNode : Node
     {
         if (objSignal == null)
             yield break;
-        objSignal.Value.Item1.Connect(objSignal.Value.Item2, Callable.From(() => { GD.Print("Signal emitted! " + objSignal.Value.Item2 ); } ), (uint)ConnectFlags.OneShot);
+        objSignal.Value.Item1.Connect(objSignal.Value.Item2, Callable.From(() => { GD.Print("Signal emitted! " + objSignal.Value.Item2); }), (uint)ConnectFlags.OneShot);
         while (objSignal.Value.Item1.ToSignal(objSignal.Value.Item1, objSignal.Value.Item2).IsCompleted != true)
         {
             yield return double.NegativeInfinity;
@@ -340,7 +340,7 @@ public partial class CoroutineWorkerNode : Node
 
     public static double StartAfterCoroutine(Coroutine coroutine)
     {
-        var cor = GetCoroutine(coroutine);
+        Coroutine cor = GetCoroutine(coroutine);
         if (cor.IsSuccess)
         {
             return 0;
@@ -350,7 +350,7 @@ public partial class CoroutineWorkerNode : Node
         return double.NaN;
     }
 
-    public static double WaitUntilSignal(GodotObject godotObject, string signal) 
+    public static double WaitUntilSignal(GodotObject godotObject, string signal)
     {
         if (godotObject.ToSignal(godotObject, signal).IsCompleted)
         {
@@ -378,7 +378,7 @@ public partial class CoroutineWorkerNode : Node
     }
     public void KillCoroutine(Coroutine coroutine)
     {
-        var index = GetCoroutineIndex(coroutine);
+        int index = GetCoroutineIndex(coroutine);
         if (index == -1)
             return;
         _mutex.Lock();
@@ -405,37 +405,31 @@ public partial class CoroutineWorkerNode : Node
 
     public static int GetCoroutineIndex(Coroutine coroutine)
     {
-        switch (coroutine.CoroutineType)
+        return coroutine.CoroutineType switch
         {
-            case CoroutineType.Process:
-                return Instance._processCoroutines.FindIndex(x => x.Equals(coroutine));
-            case CoroutineType.PhysicsProcess:
-                return Instance._physicsCoroutines.FindIndex(x => x.Equals(coroutine));
-            default:
-                return -1;
-        }
+            CoroutineType.Process => Instance._processCoroutines.FindIndex(x => x.Equals(coroutine)),
+            CoroutineType.PhysicsProcess => Instance._physicsCoroutines.FindIndex(x => x.Equals(coroutine)),
+            _ => -1,
+        };
     }
 
     public static Coroutine GetCoroutine(Coroutine coroutine)
     {
-        switch (coroutine.CoroutineType)
+        return coroutine.CoroutineType switch
         {
-            case CoroutineType.Process:
-                return Instance._processCoroutines.FirstOrDefault(x => x.Equals(coroutine));
-            case CoroutineType.PhysicsProcess:
-                return Instance._physicsCoroutines.FirstOrDefault(x => x.Equals(coroutine));
-            default:
-                return default;
-        }
+            CoroutineType.Process => Instance._processCoroutines.FirstOrDefault(x => x.Equals(coroutine)),
+            CoroutineType.PhysicsProcess => Instance._physicsCoroutines.FirstOrDefault(x => x.Equals(coroutine)),
+            _ => default,
+        };
     }
-    
+
     public static void PauseCoroutineInstance(Coroutine coroutine)
     {
         Instance.PauseCoroutine(coroutine);
     }
     public void PauseCoroutine(Coroutine coroutine)
-    {        
-        var index = GetCoroutineIndex(coroutine);
+    {
+        int index = GetCoroutineIndex(coroutine);
         if (index == -1)
             return;
         _mutex.Lock();

@@ -6,7 +6,7 @@ public static class GunHelper
 {
     public static bool CheckMagazineCompatible(this Gun gun, string magazineId)
     {
-        var magazine = ItemMaker.CreateItem<Magazine>(magazineId);
+        Magazine? magazine = ItemMaker.CreateItem<Magazine>(magazineId);
         if (magazine == null)
             return false;
 
@@ -19,7 +19,7 @@ public static class GunHelper
             return false;
 
 
-        var magazine = ItemMaker.CreateItem<Magazine>(magazineId);
+        Magazine? magazine = ItemMaker.CreateItem<Magazine>(magazineId);
         if (magazine == null)
             return false;
 
@@ -33,7 +33,7 @@ public static class GunHelper
             return false;
 
 
-        var magazine = ItemMaker.CreateItem<Magazine>(magazineId);
+        Magazine? magazine = ItemMaker.CreateItem<Magazine>(magazineId);
         if (magazine == null)
             return false;
 
@@ -49,7 +49,7 @@ public static class GunHelper
             return false;
 
 
-        var magazine = ItemMaker.CreateItem<Magazine>(magazineId);
+        Magazine? magazine = ItemMaker.CreateItem<Magazine>(magazineId);
         if (magazine == null)
             return false;
 

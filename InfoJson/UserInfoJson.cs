@@ -1,5 +1,5 @@
-﻿using EIV_Common.Platform;
-using EIV_Common.Extensions;
+﻿using EIV_Common.Extensions;
+using EIV_Common.Platform;
 using System.Text.Json.Serialization;
 
 namespace EIV_Common.InfoJson;

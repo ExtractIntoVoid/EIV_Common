@@ -7,13 +7,13 @@ public class ItemRemake
 {
     public static List<ItemBase> ItemRemaker(List<ItemRecreator> itemsToRecreate)
     {
-        var ret = new List<ItemBase>();
-        foreach (var item in itemsToRecreate)
+        List<ItemBase> ret = [];
+        foreach (ItemRecreator item in itemsToRecreate)
         {
-            var remadeItem = ItemRemaker(item);
+            ItemBase? remadeItem = ItemRemaker(item);
             if (remadeItem == null)
                 continue;
-            for (var i = 0; i < item.Amount; i++)
+            for (int i = 0; i < item.Amount; i++)
                 ret.Add((ItemBase)remadeItem.Clone());
         }
 
@@ -22,19 +22,19 @@ public class ItemRemake
 
     public static ItemBase? ItemRemaker(ItemRecreator itemRecreator)
     {
-        var item = ItemMaker.MakeNewItem(itemRecreator.ItemBaseID);
+        ItemBase? item = ItemMaker.MakeNewItem(itemRecreator.ItemBaseID);
         if (item == null)
             return null;
 
-        foreach (var keyValuePair in itemRecreator.ChangedValues)
+        foreach (KeyValuePair<string, KVChange> keyValuePair in itemRecreator.ChangedValues)
         {
             item.ChangeProperty(keyValuePair.Key, keyValuePair.Value);
         }
 
 
-        foreach (var contaied in itemRecreator.Contained)
+        foreach (ItemRecreator contaied in itemRecreator.Contained)
         {
-            var remadeItem = ItemRemaker(contaied);
+            ItemBase? remadeItem = ItemRemaker(contaied);
             if (remadeItem == null)
                 continue;
 
@@ -42,7 +42,7 @@ public class ItemRemake
             {
                 case nameof(Magazine):
                     {
-                        var mag = (Magazine)item;
+                        Magazine mag = (Magazine)item;
                         if (contaied.Slot == AcceptedSlots.AmmoSlot)
                         {
                             mag.TryInsertAmmos(contaied.ItemBaseID, contaied.Amount);
@@ -52,7 +52,7 @@ public class ItemRemake
                     break;
                 case nameof(Gun):
                     {
-                        var gun = (Gun)item;
+                        Gun gun = (Gun)item;
                         if (contaied.Slot == AcceptedSlots.MagazineSlot)
                         {
                             gun.TryCreateMagazine(contaied.ItemBaseID);
@@ -62,7 +62,7 @@ public class ItemRemake
                     break;
                 case nameof(Rig):
                     {
-                        var rig = (Rig)item;
+                        Rig rig = (Rig)item;
                         if (contaied.Slot == AcceptedSlots.PlateSlot)
                         {
                             rig.TrySetArmorPlate(contaied.ItemBaseID);

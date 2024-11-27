@@ -19,10 +19,10 @@ public class ItemMaker
             return (T)item.Clone();
         return default;
     }
-    
+
     public static void PrintBaseIds()
     {
-        foreach (var item in Storage.Items)
+        foreach (KeyValuePair<string, ItemBase> item in Storage.Items)
         {
             Console.WriteLine(item.Key);
         }

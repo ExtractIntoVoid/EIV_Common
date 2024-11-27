@@ -12,7 +12,7 @@ public static class MagazineHelper
     /// <returns>False if AmmoId is not an IAmmo, and if SupportedAmmo doesnt contains either the BaseId or the Tags</returns>
     public static bool CheckAmmoCompatible(this Magazine magazine, string ammoId)
     {
-        var ammo = ItemMaker.CreateItem<Ammo>(ammoId);
+        Ammo? ammo = ItemMaker.CreateItem<Ammo>(ammoId);
         if (ammo == null)
             return false;
         return magazine.SupportedAmmos.Contains(ammoId) || magazine.SupportedAmmos.Intersect(ammo.Tags).Any();
@@ -35,7 +35,7 @@ public static class MagazineHelper
             return false;
 
         // This here prevent to accidentally make or insert ammo that not exists
-        var ammo = ItemMaker.CreateItem<Ammo>(ammoId);
+        Ammo? ammo = ItemMaker.CreateItem<Ammo>(ammoId);
         if (ammo == null)
             return false;
 
@@ -64,7 +64,7 @@ public static class MagazineHelper
             return false;
 
         // This here prevent to accidentally make or instert ammo that not exists
-        var ammo = ItemMaker.CreateItem<Ammo>(ammoId);
+        Ammo? ammo = ItemMaker.CreateItem<Ammo>(ammoId);
         if (ammo == null)
             return false;
 

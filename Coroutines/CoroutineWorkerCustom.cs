@@ -10,17 +10,17 @@ public class CoroutineWorkerCustom
     static Func<IEnumerator<double>, IEnumerator<double>>? ReplacementFunction;
     static CoroutineWorkerCustom? instance;
     public static CoroutineWorkerCustom Instance
-    { 
+    {
         get
         {
             if (instance == null)
                 return instance = new();
             return instance;
-        } 
-        set 
+        }
+        set
         {
             instance = value;
-        } 
+        }
     }
     List<double> Delays = [];
     List<Coroutine> CustomCoroutines = [];
@@ -31,15 +31,17 @@ public class CoroutineWorkerCustom
     double prevTime = 0f;
     double accumulator = 0f;
     double TotalTime = 0f;
-    public bool PauseUpdate = false; 
+    public bool PauseUpdate = false;
     private readonly Mutex _mutex = new();
     public CoroutineWorkerCustom()
     {
         Instance = this;
         Watch = Stopwatch.StartNew();
         prevTime = Watch.ElapsedMilliseconds / 1000f;
-        UpdateThread = new(Update);
-        UpdateThread.IsBackground = true;
+        UpdateThread = new(Update)
+        {
+            IsBackground = true
+        };
         UpdateThread.Start();
     }
 
@@ -78,10 +80,10 @@ public class CoroutineWorkerCustom
         Kill();
         if (_mutex.WaitOne(1))
         {
-            
+
             for (int i = 0; i < Instance.CustomCoroutines.Count; i++)
             {
-                var item = Instance.CustomCoroutines[i];
+                Coroutine item = Instance.CustomCoroutines[i];
                 MainLog.logger?.Debug(Instance.Delays[i] + " " + i + " " + deltaTime + " " + item);
                 if (Instance.Delays[i] > 0f)
                     Instance.Delays[i] -= deltaTime;
@@ -111,7 +113,7 @@ public class CoroutineWorkerCustom
         {
             for (int i = 0; i < Instance.CustomCoroutines.Count; i++)
             {
-                var item = Instance.CustomCoroutines[i];
+                Coroutine item = Instance.CustomCoroutines[i];
                 if (item.ShouldKill)
                 {
                     Instance.CustomCoroutines.Remove(item);
@@ -295,7 +297,7 @@ public class CoroutineWorkerCustom
 
     public static double StartAfterCoroutine(Coroutine coroutine)
     {
-        var cor = Instance.CustomCoroutines.Where(x => x.Equals(coroutine)).FirstOrDefault();
+        Coroutine cor = Instance.CustomCoroutines.Where(x => x.Equals(coroutine)).FirstOrDefault();
         if (cor.IsSuccess)
         {
             return 0;
@@ -321,7 +323,7 @@ public class CoroutineWorkerCustom
     }
     public void KillCoroutine(Coroutine coroutine)
     {
-        var index = Instance.CustomCoroutines.FindIndex(x => x.Equals(coroutine));
+        int index = Instance.CustomCoroutines.FindIndex(x => x.Equals(coroutine));
         if (index == -1)
         {
             MainLog.logger?.Debug("No Coroutine!");
@@ -329,7 +331,7 @@ public class CoroutineWorkerCustom
         }
         if (_mutex.WaitOne(1))
         {
-            var cor = Instance.CustomCoroutines[index];
+            Coroutine cor = Instance.CustomCoroutines[index];
             cor.ShouldKill = true;
             Instance.CustomCoroutines[index] = cor;
             _mutex.ReleaseMutex();
@@ -342,7 +344,7 @@ public class CoroutineWorkerCustom
     }
     public void PauseCoroutine(Coroutine coroutine)
     {
-        var index = Instance.CustomCoroutines.FindIndex(x => x.Equals(coroutine));
+        int index = Instance.CustomCoroutines.FindIndex(x => x.Equals(coroutine));
         if (index == -1)
         {
             MainLog.logger?.Debug("No Coroutine!");
@@ -350,7 +352,7 @@ public class CoroutineWorkerCustom
         }
         if (_mutex.WaitOne(1))
         {
-            var cor = Instance.CustomCoroutines[index];
+            Coroutine cor = Instance.CustomCoroutines[index];
             cor.ShouldPause = true;
             Instance.CustomCoroutines[index] = cor;
             _mutex.ReleaseMutex();

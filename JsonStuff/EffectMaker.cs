@@ -6,7 +6,7 @@ public class EffectMaker
 {
     public static Effect? MakeNewEffect(string baseId)
     {
-        if (!Storage.Effects.TryGetValue(baseId, out var item))
+        if (!Storage.Effects.TryGetValue(baseId, out Effect? item))
             return null;
         return (Effect)item.Clone();
     }

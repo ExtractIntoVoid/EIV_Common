@@ -18,11 +18,11 @@ public class UnknownPlatform : IPlatform
 
     public void Init()
     {
-        
+
     }
 
     public void ShutDown()
     {
-        
+
     }
 }

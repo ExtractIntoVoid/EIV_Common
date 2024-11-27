@@ -6,7 +6,7 @@ public class ServerInfoJson
 {
     public ConnectionInfo Connection { get; set; } = new();
 
-    public List<ModInfo> Mods { get; set; } = new();
+    public List<ModInfo> Mods { get; set; } = [];
 
     public GameInfo Game { get; set; } = new();
 

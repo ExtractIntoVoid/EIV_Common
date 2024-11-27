@@ -24,7 +24,7 @@ public static class ItemHelper
     {
         if (!item.HasProperty(valueName))
             return false;
-        var prop = item.GetType().GetProperty(valueName)!;
+        System.Reflection.PropertyInfo prop = item.GetType().GetProperty(valueName)!;
         if (!prop.CanWrite)
             return false;
         switch (kv.AvailableTypeName)
