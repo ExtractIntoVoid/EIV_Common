@@ -1,16 +1,16 @@
-﻿using EIV_JsonLib.Classes;
-using EIV_JsonLib.Interfaces;
+﻿using EIV_JsonLib;
+using EIV_JsonLib.Base;
 
 namespace EIV_Common.JsonStuff;
 
 public static class ItemHelper
 {
-    public static bool HasProperty(this IItem item, string value)
+    public static bool HasProperty(this ItemBase item, string value)
     {
         return item.GetType().GetProperty(value) != null;
     }
 
-    public static T? GetProperty<T>(this IItem item, string value)
+    public static T? GetProperty<T>(this ItemBase item, string value)
     {
         if (item.HasProperty(value))
         {
@@ -20,12 +20,11 @@ public static class ItemHelper
         return default;
     }
 
-    public static bool ChangeProperty(this IItem item, string valueName, ItemRecreator.KVChange kv)
+    public static bool ChangeProperty(this ItemBase item, string valueName, KVChange kv)
     {
         if (!item.HasProperty(valueName))
             return false;
         var prop = item.GetType().GetProperty(valueName)!;
-        Console.WriteLine(prop.PropertyType);
         if (!prop.CanWrite)
             return false;
         switch (kv.AvailableTypeName)

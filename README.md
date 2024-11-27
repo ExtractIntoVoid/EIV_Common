@@ -12,8 +12,3 @@ Common utilites for EIV
 - INI Read/Write
 - Basic Mod Manager
 - RSA Encryption for long messages
-
-### TODO
-
-Many things to do and delete or refactor.\
-Mainly the Inventory and the InfoJson would be.

@@ -1,11 +1,10 @@
-﻿using Newtonsoft.Json.Converters;
-using Newtonsoft.Json;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace EIV_Common.Platform;
 
-[JsonConverter(typeof(StringEnumConverter))]
+[JsonConverter(typeof(JsonStringEnumConverter))]
 [DefaultValue(Unknown)]
 public enum PlatformType
 {

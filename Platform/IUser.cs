@@ -1,5 +1,4 @@
-﻿
-namespace EIV_Common.Platform;
+﻿namespace EIV_Common.Platform;
 
 /// <summary>
 /// User dependent.

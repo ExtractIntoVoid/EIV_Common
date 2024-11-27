@@ -1,19 +1,19 @@
-﻿using EIV_JsonLib.Interfaces;
+﻿using EIV_JsonLib.Base;
 
 namespace EIV_Common.JsonStuff;
 
 public class ItemMaker
 {
-    public static IItem? MakeNewItem(string baseId)
+    public static ItemBase? MakeNewItem(string baseId)
     {
-        if (!Storage.Items.TryGetValue(baseId, out IItem? item))
+        if (!Storage.Items.TryGetValue(baseId, out ItemBase? item))
             return null;
-        return (IItem)item.Clone();
+        return (ItemBase)item.Clone();
     }
 
-    public static T? CreateItem<T>(string baseId) where T : IItem
+    public static T? CreateItem<T>(string baseId) where T : ItemBase
     {
-        if (!Storage.Items.TryGetValue(baseId, out IItem? item))
+        if (!Storage.Items.TryGetValue(baseId, out ItemBase? item))
             return default;
         if (item is T)
             return (T)item.Clone();

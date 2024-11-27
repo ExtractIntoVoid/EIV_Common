@@ -1,10 +1,10 @@
-﻿using EIV_JsonLib.Interfaces;
+﻿using EIV_JsonLib;
 
 namespace EIV_Common.JsonStuff;
 
 public static class RigHelper
 {
-    public static bool CheckCompatibleArmorPlate(this IRig rig, string armorPlateId)
+    public static bool CheckCompatibleArmorPlate(this Rig rig, string armorPlateId)
     {
         // If this emtpy means we accept every plate!
         if (rig.ArmorPlateAccepted.Count == 0)
@@ -14,7 +14,7 @@ public static class RigHelper
         return rig.ArmorPlateAccepted.Contains(armorPlateId);
     }
 
-    public static bool CheckCompatibleItemType(this IRig rig, string itemId)
+    public static bool CheckCompatibleItemType(this Rig rig, string itemId)
     {
         // If this emtpy means we accept item!
         if (rig.ItemTypesAccepted.Count == 0)
@@ -24,7 +24,7 @@ public static class RigHelper
         return rig.ItemTypesAccepted.Contains(itemId);
     }
 
-    public static bool CheckCompatibleItem(this IRig rig, string itemId)
+    public static bool CheckCompatibleItem(this Rig rig, string itemId)
     {
         // If this emtpy means we accept every plate!
         if (rig.SpecificItemsAccepted.Count == 0)
@@ -35,7 +35,7 @@ public static class RigHelper
     }
 
 
-    public static bool TrySetArmorPlate(this IRig rig, string armorPlateId)
+    public static bool TrySetArmorPlate(this Rig rig, string armorPlateId)
     {
         if (!rig.CheckCompatibleArmorPlate(armorPlateId))
             return false;
@@ -44,7 +44,7 @@ public static class RigHelper
         return true;
     }
 
-    public static bool TryAddItem(this IRig rig, string itemId)
+    public static bool TryAddItem(this Rig rig, string itemId)
     {
         if (!rig.CheckCompatibleItem(itemId))
             return false;
@@ -63,7 +63,7 @@ public static class RigHelper
         return true;
     }
 
-    public static bool TryAddItems(this IRig rig, IList<string> itemId)
+    public static bool TryAddItems(this Rig rig, IList<string> itemId)
     {
         foreach (var item in itemId)
         {

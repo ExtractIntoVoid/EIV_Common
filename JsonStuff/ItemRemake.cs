@@ -1,26 +1,26 @@
-﻿using EIV_JsonLib.Classes;
-using EIV_JsonLib.Interfaces;
+﻿using EIV_JsonLib;
+using EIV_JsonLib.Base;
 
 namespace EIV_Common.JsonStuff;
 
 public class ItemRemake
 {
-    public static List<IItem> ItemRemaker(List<ItemRecreator> itemsToRecreate)
+    public static List<ItemBase> ItemRemaker(List<ItemRecreator> itemsToRecreate)
     {
-        var ret = new List<IItem>();
+        var ret = new List<ItemBase>();
         foreach (var item in itemsToRecreate)
         {
             var remadeItem = ItemRemaker(item);
             if (remadeItem == null)
                 continue;
             for (var i = 0; i < item.Amount; i++)
-                ret.Add((IItem)remadeItem.Clone());
+                ret.Add((ItemBase)remadeItem.Clone());
         }
 
         return ret;
     }
 
-    public static IItem? ItemRemaker(ItemRecreator itemRecreator)
+    public static ItemBase? ItemRemaker(ItemRecreator itemRecreator)
     {
         var item = ItemMaker.MakeNewItem(itemRecreator.ItemBaseID);
         if (item == null)
@@ -40,9 +40,9 @@ public class ItemRemake
 
             switch (item.ItemType)
             {
-                case nameof(IMagazine):
+                case nameof(Magazine):
                     {
-                        var mag = (IMagazine)item;
+                        var mag = (Magazine)item;
                         if (contaied.Slot == AcceptedSlots.AmmoSlot)
                         {
                             mag.TryInsertAmmos(contaied.ItemBaseID, contaied.Amount);
@@ -50,9 +50,9 @@ public class ItemRemake
                         item = mag;
                     }
                     break;
-                case nameof(IGun):
+                case nameof(Gun):
                     {
-                        var gun = (IGun)item;
+                        var gun = (Gun)item;
                         if (contaied.Slot == AcceptedSlots.MagazineSlot)
                         {
                             gun.TryCreateMagazine(contaied.ItemBaseID);
@@ -60,9 +60,9 @@ public class ItemRemake
                         item = gun;
                     }
                     break;
-                case nameof(IRig):
+                case nameof(Rig):
                     {
-                        var rig = (IRig)item;
+                        var rig = (Rig)item;
                         if (contaied.Slot == AcceptedSlots.PlateSlot)
                         {
                             rig.TrySetArmorPlate(contaied.ItemBaseID);

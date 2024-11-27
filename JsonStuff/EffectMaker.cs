@@ -1,13 +1,13 @@
-﻿using EIV_JsonLib.Interfaces;
+﻿using EIV_JsonLib;
 
 namespace EIV_Common.JsonStuff;
 
 public class EffectMaker
 {
-    public static IEffect? MakeNewEffect(string baseId)
+    public static Effect? MakeNewEffect(string baseId)
     {
         if (!Storage.Effects.TryGetValue(baseId, out var item))
             return null;
-        return (IEffect)item.Clone();
+        return (Effect)item.Clone();
     }
 }

@@ -2,12 +2,10 @@
 using EIV_Common.Logger;
 using EIV_DataPack;
 using EIV_JsonLib;
-using EIV_JsonLib.Convert;
-using EIV_JsonLib.Interfaces;
-using EIV_JsonLib.Modding;
+using EIV_JsonLib.Json;
 using ModAPI;
-using Newtonsoft.Json;
 using System.Reflection;
+using System.Text.Json;
 
 namespace EIV_Common;
 
@@ -45,7 +43,7 @@ public class ModManager
         }
         foreach (var json in Directory.GetFiles(Path.Combine(dir, "Assets", "Effects"), "*.json", SearchOption.AllDirectories))
         {
-            var effect = JsonConvert.DeserializeObject<IEffect>(File.ReadAllText(json), ConvertHelper.GetSerializerSettings());
+            var effect = JsonSerializer.Deserialize<Effect>(File.ReadAllText(json));
             if (effect != null)
             {
                 Storage.Effects.TryAdd(effect.EffectID, effect);
@@ -85,7 +83,7 @@ public class ModManager
         {
             var jsonLib = (IJsonLibConverter?)obj;
             if (jsonLib == null) return;
-            JsonLibConverters.ModdedConverters.Add(jsonLib);
+            CoreConverters.Converters.Add(jsonLib);
         }
     }
 
