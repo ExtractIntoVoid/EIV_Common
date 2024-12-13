@@ -4,16 +4,16 @@ namespace EIV_Common.JsonStuff;
 
 public class ItemMaker
 {
-    public static ItemBase? MakeNewItem(string baseId)
+    public static CoreItem? MakeNewItem(string baseId)
     {
-        if (!Storage.Items.TryGetValue(baseId, out ItemBase? item))
+        if (!Storage.Items.TryGetValue(baseId, out CoreItem? item))
             return null;
-        return (ItemBase)item.Clone();
+        return (CoreItem)item.Clone();
     }
 
-    public static T? CreateItem<T>(string baseId) where T : ItemBase
+    public static T? CreateItem<T>(string baseId) where T : CoreItem
     {
-        if (!Storage.Items.TryGetValue(baseId, out ItemBase? item))
+        if (!Storage.Items.TryGetValue(baseId, out CoreItem? item))
             return default;
         if (item is T)
             return (T)item.Clone();
@@ -22,7 +22,7 @@ public class ItemMaker
 
     public static void PrintBaseIds()
     {
-        foreach (KeyValuePair<string, ItemBase> item in Storage.Items)
+        foreach (KeyValuePair<string, CoreItem> item in Storage.Items)
         {
             Console.WriteLine(item.Key);
         }

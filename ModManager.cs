@@ -36,10 +36,10 @@ public class ModManager
 
         foreach (string json in Directory.GetFiles(Path.Combine(dir, "Assets", "Items"), "*.json", SearchOption.AllDirectories))
         {
-            ItemBase? item = File.ReadAllText(json).ConvertFromString();
+            CoreItem? item = File.ReadAllText(json).ConvertFromString();
             if (item != null)
             {
-                Storage.Items.TryAdd(item.BaseID, item);
+                Storage.Items.TryAdd(item.Id, item);
             }
         }
         foreach (string json in Directory.GetFiles(Path.Combine(dir, "Assets", "Effects"), "*.json", SearchOption.AllDirectories))
@@ -56,10 +56,10 @@ public class ModManager
     {
         foreach (string? item in reader.Pack.FileNames.Where(x => x.Contains(".json") && x.Contains("Assets/Items")))
         {
-            EIV_JsonLib.Base.ItemBase? realItem = System.Text.Encoding.UTF8.GetString(reader.GetFileData(item)).ConvertFromString();
+            CoreItem? realItem = System.Text.Encoding.UTF8.GetString(reader.GetFileData(item)).ConvertFromString();
             if (realItem != null)
             {
-                Storage.Items.TryAdd(realItem.BaseID, realItem);
+                Storage.Items.TryAdd(realItem.Id, realItem);
             }
         }
     }

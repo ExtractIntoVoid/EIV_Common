@@ -6,24 +6,24 @@ namespace EIV_Common.JsonStuff;
 
 public class ItemRemake
 {
-    public static List<ItemBase> ItemRemaker(List<ItemRecreator> itemsToRecreate)
+    public static List<CoreItem> ItemRemaker(List<ItemRecreator> itemsToRecreate)
     {
-        List<ItemBase> ret = [];
+        List<CoreItem> ret = [];
         foreach (ItemRecreator item in itemsToRecreate)
         {
-            ItemBase? remadeItem = ItemRemaker(item);
+            CoreItem? remadeItem = ItemRemaker(item);
             if (remadeItem == null)
                 continue;
             for (int i = 0; i < item.Amount; i++)
-                ret.Add((ItemBase)remadeItem.Clone());
+                ret.Add((CoreItem)remadeItem.Clone());
         }
 
         return ret;
     }
 
-    public static ItemBase? ItemRemaker(ItemRecreator itemRecreator)
+    public static CoreItem? ItemRemaker(ItemRecreator itemRecreator)
     {
-        ItemBase? item = ItemMaker.MakeNewItem(itemRecreator.ItemBaseID);
+        CoreItem? item = ItemMaker.MakeNewItem(itemRecreator.ItemBaseID);
         if (item == null)
             return null;
 
@@ -35,7 +35,7 @@ public class ItemRemake
 
         foreach (ItemRecreator contaied in itemRecreator.Contained)
         {
-            ItemBase? remadeItem = ItemRemaker(contaied);
+            CoreItem? remadeItem = ItemRemaker(contaied);
             if (remadeItem == null)
                 continue;
 

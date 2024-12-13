@@ -40,7 +40,11 @@ public static class RigHelper
         if (!rig.CheckCompatibleArmorPlate(armorPlateId))
             return false;
 
-        rig.PlateSlotId = armorPlateId;
+        ArmorPlate? armorPlate = ItemMaker.CreateItem<ArmorPlate>(armorPlateId);
+        if (armorPlate == null)
+            return false;
+
+        rig.PlateSlot = armorPlate;
         return true;
     }
 
@@ -49,7 +53,7 @@ public static class RigHelper
         if (!rig.CheckCompatibleItem(itemId))
             return false;
 
-        EIV_JsonLib.Base.ItemBase? item = ItemMaker.MakeNewItem(itemId);
+        EIV_JsonLib.Base.CoreItem? item = ItemMaker.MakeNewItem(itemId);
         if (item == null)
             return false;
 

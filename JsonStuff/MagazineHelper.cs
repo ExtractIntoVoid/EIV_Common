@@ -34,14 +34,13 @@ public static class MagazineHelper
         if (!magazine.CheckAmmoCompatible(ammoId))
             return false;
 
-        // This here prevent to accidentally make or insert ammo that not exists
         Ammo? ammo = ItemMaker.CreateItem<Ammo>(ammoId);
         if (ammo == null)
             return false;
 
         for (int i = 0; i < ammoCount; i++)
         {
-            magazine.Ammunitions.Add(ammoId);
+            magazine.Ammunitions.Add((Ammo)ammo.Clone());
             if (magazine.Ammunitions.Count == magazine.MaxMagSize)
                 return false;
         }
@@ -63,12 +62,11 @@ public static class MagazineHelper
         if (!magazine.CheckAmmoCompatible(ammoId))
             return false;
 
-        // This here prevent to accidentally make or instert ammo that not exists
         Ammo? ammo = ItemMaker.CreateItem<Ammo>(ammoId);
         if (ammo == null)
             return false;
 
-        magazine.Ammunitions.Add(ammoId);
+        magazine.Ammunitions.Add(ammo);
         return true;
     }
 }

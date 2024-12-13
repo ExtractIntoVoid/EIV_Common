@@ -18,7 +18,6 @@ public static class GunHelper
         if (!gun.CheckMagazineCompatible(magazineId))
             return false;
 
-
         Magazine? magazine = ItemMaker.CreateItem<Magazine>(magazineId);
         if (magazine == null)
             return false;
