@@ -7,6 +7,7 @@ using EIV_JsonLib.Json;
 using ModAPI;
 using System.Reflection;
 using System.Text.Json;
+using System.Text;
 
 namespace EIV_Common;
 
@@ -31,36 +32,57 @@ public class ModManager
 
     public static void LoadAssets_Unpack(string dir)
     {
-        if (!Directory.Exists(Path.Combine(dir, "Assets", "Items")))
-            return;
-
-        foreach (string json in Directory.GetFiles(Path.Combine(dir, "Assets", "Items"), "*.json", SearchOption.AllDirectories))
+        foreach (string json in Directory.GetFiles(Path.Combine(dir,  "Item"), "*.json", SearchOption.AllDirectories))
         {
             CoreItem? item = File.ReadAllText(json).ConvertFromString();
             if (item != null)
-            {
                 Storage.Items.TryAdd(item.Id, item);
-            }
         }
-        foreach (string json in Directory.GetFiles(Path.Combine(dir, "Assets", "Effects"), "*.json", SearchOption.AllDirectories))
+        foreach (string json in Directory.GetFiles(Path.Combine(dir, "Effect"), "*.json", SearchOption.AllDirectories))
         {
             Effect? effect = JsonSerializer.Deserialize<Effect>(File.ReadAllText(json));
             if (effect != null)
-            {
-                Storage.Effects.TryAdd(effect.EffectID, effect);
-            }
+                Storage.Effects.TryAdd(effect.EffectName, effect);
+        }
+        foreach (string? json in Directory.GetFiles(Path.Combine(dir, "Stash"), "*.json", SearchOption.AllDirectories))
+        {
+            Stash? stash = JsonSerializer.Deserialize<Stash>(File.ReadAllText(json), ConvertHelper.GetSerializerSettings());
+            if (stash != null)
+                Storage.Stashes.TryAdd(json, stash);
+        }
+        foreach (string? json in Directory.GetFiles(Path.Combine(dir, "Inventory"), "*.json", SearchOption.AllDirectories))
+        {
+            List<ItemRecreator>? recreators = JsonSerializer.Deserialize<List<ItemRecreator>>(File.ReadAllText(json), ConvertHelper.GetSerializerSettings());
+            if (recreators != null)
+                Storage.PredefinedCharactersInventory.TryAdd(json, recreators);
         }
     }
 
     public static void LoadAssets_Pack(DataPackReader reader)
     {
-        foreach (string? item in reader.Pack.FileNames.Where(x => x.Contains(".json") && x.Contains("Assets/Items")))
+        foreach (string? item in reader.Pack.FileNames.Where(x => x.Contains(".json") && x.Contains("Item")))
         {
-            CoreItem? realItem = System.Text.Encoding.UTF8.GetString(reader.GetFileData(item)).ConvertFromString();
+            CoreItem? realItem = Encoding.UTF8.GetString(reader.GetFileData(item)).ConvertFromString();
             if (realItem != null)
-            {
                 Storage.Items.TryAdd(realItem.Id, realItem);
-            }
+        }
+        foreach (string? item in reader.Pack.FileNames.Where(x => x.Contains(".json") && x.Contains("Effect")))
+        {
+            Effect? effect = JsonSerializer.Deserialize<Effect>(Encoding.UTF8.GetString(reader.GetFileData(item)));
+            if (effect != null)
+                Storage.Effects.TryAdd(effect.EffectName, effect);
+        }
+        foreach (string? item in reader.Pack.FileNames.Where(x => x.Contains(".json") && x.Contains("Stash")))
+        {
+            Stash? stash = JsonSerializer.Deserialize<Stash>(Encoding.UTF8.GetString(reader.GetFileData(item)), ConvertHelper.GetSerializerSettings());
+            if (stash != null)
+                Storage.Stashes.TryAdd(item, stash);
+        }
+        foreach (string? item in reader.Pack.FileNames.Where(x => x.Contains(".json") && x.Contains("Inventory")))
+        {
+            List<ItemRecreator>? recreators = JsonSerializer.Deserialize<List<ItemRecreator>>(Encoding.UTF8.GetString(reader.GetFileData(item)), ConvertHelper.GetSerializerSettings());
+            if (recreators != null)
+                Storage.PredefinedCharactersInventory.TryAdd(item, recreators);
         }
     }
 
@@ -78,7 +100,7 @@ public class ModManager
         LoadMod(typeof(IJsonLibConverter), assembly, Delegate);
         return;
 
-        void Delegate(Type? retType, object? obj)
+        static void Delegate(Type? retType, object? obj)
         {
             IJsonLibConverter? jsonLib = (IJsonLibConverter?)obj;
             if (jsonLib == null) return;

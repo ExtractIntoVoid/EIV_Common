@@ -23,6 +23,7 @@ public static class MainLog
             .WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss.fff zzz} [{Level:u3}] ({Method}) {Message:lj}{NewLine}{Exception}")
             .CreateLogger();
         logger.Information("Application started!");
+        Log.Logger = logger;
     }
 
     /// <summary>

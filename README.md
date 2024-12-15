@@ -11,4 +11,3 @@ Common utilites for EIV
 - Platform Interface
 - INI Read/Write
 - Basic Mod Manager
-- RSA Encryption for long messages

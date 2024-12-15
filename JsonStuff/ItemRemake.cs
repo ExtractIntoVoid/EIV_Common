@@ -45,9 +45,7 @@ public class ItemRemake
                     {
                         Magazine mag = (Magazine)item;
                         if (contaied.Slot == AcceptedSlots.AmmoSlot)
-                        {
                             mag.TryInsertAmmos(contaied.ItemBaseID, contaied.Amount);
-                        }
                         item = mag;
                     }
                     break;
@@ -55,9 +53,7 @@ public class ItemRemake
                     {
                         Gun gun = (Gun)item;
                         if (contaied.Slot == AcceptedSlots.MagazineSlot)
-                        {
                             gun.TryCreateMagazine(contaied.ItemBaseID);
-                        }
                         item = gun;
                     }
                     break;
@@ -65,13 +61,9 @@ public class ItemRemake
                     {
                         Rig rig = (Rig)item;
                         if (contaied.Slot == AcceptedSlots.PlateSlot)
-                        {
                             rig.TrySetArmorPlate(contaied.ItemBaseID);
-                        }
                         if (contaied.Slot == AcceptedSlots.ItemsSlot)
-                        {
                             rig.TryAddItem(contaied.ItemBaseID);
-                        }
                         item = rig;
                     }
                     break;

@@ -11,12 +11,6 @@ public class MethodEnricher : ILogEventEnricher
         StackTrace stackTrace = new(true);
         StackFrame[] stackFrames = stackTrace.GetFrames();
         bool hasEmit = false;
-        /*
-        foreach (var item in stackFrames)
-        {
-            Console.WriteLine(item.ToString());
-        }
-        */
         if (stackFrames.Length > 2)
         {
             if (stackFrames[2].GetMethod() != null && stackFrames[2].GetMethod()!.Name.Contains("ILogEventSink"))

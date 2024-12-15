@@ -1,4 +1,5 @@
 ﻿using EIV_JsonLib;
+using EIV_JsonLib.Base;
 
 namespace EIV_Common.JsonStuff;
 
@@ -53,7 +54,7 @@ public static class RigHelper
         if (!rig.CheckCompatibleItem(itemId))
             return false;
 
-        EIV_JsonLib.Base.CoreItem? item = ItemMaker.MakeNewItem(itemId);
+        CoreItem? item = ItemMaker.MakeNewItem(itemId);
         if (item == null)
             return false;
 

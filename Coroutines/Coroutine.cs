@@ -2,7 +2,7 @@
 
 namespace EIV_Common.Coroutines;
 
-public struct Coroutine(IEnumerator<double> enumerator, CoroutineType type)
+public struct Coroutine(IEnumerator<double> enumerator, CoroutineType type, string tag = "")
     : IEquatable<Coroutine>, IEqualityComparer<Coroutine>
 {
     public IEnumerator<double> Enumerator = enumerator;
@@ -10,8 +10,9 @@ public struct Coroutine(IEnumerator<double> enumerator, CoroutineType type)
     public bool ShouldKill = false;
     public bool ShouldPause;
     public bool IsSuccess = false;
+    public readonly string Tag = tag;
     public readonly CoroutineType CoroutineType = type;
-    readonly IEnumerator<double> _baseEnumerator = enumerator;
+    private readonly IEnumerator<double> _baseEnumerator = enumerator;
 
     public override int GetHashCode()
     {
@@ -35,6 +36,6 @@ public struct Coroutine(IEnumerator<double> enumerator, CoroutineType type)
 
     public override string ToString()
     {
-        return $"{this.GetHashCode()} IsRunning: {IsRunning}, ShouldKill {ShouldKill}, ShouldPause: {ShouldPause}, IsSuccess: {IsSuccess}, CoroutineType: {CoroutineType}";
+        return $"{this.GetHashCode()} IsRunning: {IsRunning}, ShouldKill {ShouldKill}, ShouldPause: {ShouldPause}, IsSuccess: {IsSuccess}, CoroutineType: {CoroutineType} Tag: {Tag}";
     }
 }

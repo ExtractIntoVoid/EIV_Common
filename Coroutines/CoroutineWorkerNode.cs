@@ -162,9 +162,9 @@ public partial class CoroutineWorkerNode : Node
     }
     #endregion
     #region Coroutine Creators
-    public static Coroutine? StartCoroutine(IEnumerator<double> objects, CoroutineType type = CoroutineType.Process)
+    public static Coroutine? StartCoroutine(IEnumerator<double> objects, CoroutineType type = CoroutineType.Process, string tag = "")
     {
-        Coroutine coroutine = new(objects, type);
+        Coroutine coroutine = new(objects, type, tag);
         switch (type)
         {
             case CoroutineType.Process:
@@ -180,17 +180,17 @@ public partial class CoroutineWorkerNode : Node
         Instance._delays.Add(0);
         return coroutine;
     }
-    public static Coroutine? CallDelayed(TimeSpan timeSpan, Action action, CoroutineType type = CoroutineType.Process)
+    public static Coroutine? CallDelayed(TimeSpan timeSpan, Action action, CoroutineType type = CoroutineType.Process, string tag = "")
     {
-        return StartCoroutine(_DelayedCall(timeSpan, action), type);
+        return StartCoroutine(_DelayedCall(timeSpan, action), type, tag);
     }
-    public static Coroutine? CallContinuously(Action action, CoroutineType type = CoroutineType.Process)
+    public static Coroutine? CallContinuously(Action action, CoroutineType type = CoroutineType.Process, string tag = "")
     {
-        return StartCoroutine(_CallContinuously(TimeSpan.Zero, action), type);
+        return StartCoroutine(_CallContinuously(TimeSpan.Zero, action), type, tag);
     }
-    public static Coroutine? CallPeriodically(TimeSpan timeSpan, Action action, CoroutineType type = CoroutineType.Process)
+    public static Coroutine? CallPeriodically(TimeSpan timeSpan, Action action, CoroutineType type = CoroutineType.Process, string tag = "")
     {
-        return StartCoroutine(_CallContinuously(timeSpan, action), type);
+        return StartCoroutine(_CallContinuously(timeSpan, action), type, tag);
     }
     #endregion
     #region Static Helpers
@@ -308,9 +308,7 @@ public partial class CoroutineWorkerNode : Node
     public static double WaitUntilFalse(Func<bool> evaluatorFunc)
     {
         if (!evaluatorFunc())
-        {
             return double.NaN;
-        }
         _tmpRef = evaluatorFunc;
         _replacementFunction = WaitUntilFalseHelper;
         return double.NaN;
@@ -319,9 +317,7 @@ public partial class CoroutineWorkerNode : Node
     public static double WaitUntilTrue(Func<bool> evaluatorFunc)
     {
         if (evaluatorFunc())
-        {
             return double.NaN;
-        }
         _tmpRef = evaluatorFunc;
         _replacementFunction = WaitUntilTrueHelper;
         return double.NaN;
@@ -342,9 +338,7 @@ public partial class CoroutineWorkerNode : Node
     {
         Coroutine cor = GetCoroutine(coroutine);
         if (cor.IsSuccess)
-        {
-            return 0;
-        }
+            return double.NaN;
         _tmpRef = cor;
         _replacementFunction = StartAfterCoroutineHelper;
         return double.NaN;
@@ -353,9 +347,7 @@ public partial class CoroutineWorkerNode : Node
     public static double WaitUntilSignal(GodotObject godotObject, string signal)
     {
         if (godotObject.ToSignal(godotObject, signal).IsCompleted)
-        {
             return double.NaN;
-        }
         _tmpRef = new ValueTuple<GodotObject, string>(godotObject, signal);
         _replacementFunction = WaitUntilSignalHelper;
         return double.NaN;
@@ -370,6 +362,17 @@ public partial class CoroutineWorkerNode : Node
         {
             KillCoroutineInstance(coroutines[i]);
         }
+    }
+
+    private static void KillCoroutines(List<Coroutine> coroutines)
+    {
+        coroutines.ForEach(KillCoroutineInstance);
+    }
+
+    public static void KillCoroutineTag(string Tag)
+    {
+        KillCoroutines(Instance._physicsCoroutines.Where(x => x.Tag == Tag).ToList());
+        KillCoroutines(Instance._processCoroutines.Where(x => x.Tag == Tag).ToList());
     }
 
     public static void KillCoroutineInstance(Coroutine coroutine)
@@ -423,10 +426,19 @@ public partial class CoroutineWorkerNode : Node
         };
     }
 
+    /// <summary>
+    /// Pausing or Resuming a Coroutine. 
+    /// </summary>
+    /// <param name="coroutine">The coroute</param>
     public static void PauseCoroutineInstance(Coroutine coroutine)
     {
         Instance.PauseCoroutine(coroutine);
     }
+
+    /// <summary>
+    /// Pausing or Resuming a Coroutine. 
+    /// </summary>
+    /// <param name="coroutine">The coroute</param>
     public void PauseCoroutine(Coroutine coroutine)
     {
         int index = GetCoroutineIndex(coroutine);
@@ -439,12 +451,12 @@ public partial class CoroutineWorkerNode : Node
             {
                 case CoroutineType.Process:
                     cor = Instance._processCoroutines[index];
-                    cor.ShouldPause = true;
+                    cor.ShouldPause = !cor.ShouldPause;
                     Instance._processCoroutines[index] = cor;
                     break;
                 case CoroutineType.PhysicsProcess:
                     cor = Instance._physicsCoroutines[index];
-                    cor.ShouldPause = true;
+                    cor.ShouldPause = !cor.ShouldPause;
                     Instance._physicsCoroutines[index] = cor;
                     break;
             }
