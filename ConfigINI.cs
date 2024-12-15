@@ -26,18 +26,17 @@ public class ConfigINI
     /// <summary>
     /// Reading a <typeparamref name="T"/> type in a <paramref name="section"/> and the <paramref name="key"/> from <paramref name="filename"/>
     /// </summary>
-    /// <typeparam name="T">A Type that has <see cref="IConvertible"/> and <see cref="IParsable{TSelf}"/></typeparam>
+    /// <typeparam name="T">A Type that has <see cref="IParsable{TSelf}"/></typeparam>
     /// <param name="filename">FileName to Read</param>
     /// <param name="section">INI Section</param>
     /// <param name="key">INI Key</param>
     /// <returns>Readed value or default</returns>
-    public static T? Read<T>(string filename, string section, string key) where T : IConvertible, IParsable<T>
+    public static T? Read<T>(string filename, string section, string key) where T : IParsable<T>
     {
         string readed = Read(filename, section, key);
         if (string.IsNullOrEmpty(readed))
             return default;
-        T? value = default;
-        T.TryParse(readed, null, out value);
+        T.TryParse(readed, null, out T? value);
         return value;
     }
 
@@ -70,12 +69,12 @@ public class ConfigINI
     /// <summary>
     /// Write a <paramref name="value"/> of Type <typeparamref name="T"/> to the <paramref name="filename"/> with a Key of <paramref name="key"/> and a Section as <paramref name="section"/>
     /// </summary>
-    /// <typeparam name="T">A Type that has <see cref="IConvertible"/></typeparam>
+    /// <typeparam name="T">A Type that has <see cref="IParsable{Self}"/></typeparam>
     /// <param name="filename">FileName to write to</param>
     /// <param name="section">INI Section</param>
     /// <param name="key">INI Key</param>
     /// <param name="value">The Value</param>
-    public static void Write<T>(string filename, string section, string key, T value) where T : IConvertible
+    public static void Write<T>(string filename, string section, string key, T value) where T : IParsable<T>
     {
         Write(filename, section, key, value.ToString());
     }

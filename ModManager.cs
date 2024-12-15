@@ -19,7 +19,6 @@ public class ModManager
     {
         if (MainLog.logger == null)
             MainLog.CreateNew();
-        Debugger.ParseLogger(MainLog.logger!);
         MainLoader.Init(new LoadSettings()
         {
             LoadAsMainCaller = false,
@@ -98,12 +97,12 @@ public class ModManager
     public static void LoadMod_JsonLib(Assembly assembly)
     {
         LoadMod(typeof(IJsonLibConverter), assembly, Delegate);
-        return;
 
         static void Delegate(Type? retType, object? obj)
         {
             IJsonLibConverter? jsonLib = (IJsonLibConverter?)obj;
-            if (jsonLib == null) return;
+            if (jsonLib == null)
+                return;
             CoreConverters.Converters.Add(jsonLib);
         }
     }
@@ -112,6 +111,5 @@ public class ModManager
     {
         Storage.ClearAll();
         MainLoader.DeInit();
-        Debugger.ClearLogger();
     }
 }
