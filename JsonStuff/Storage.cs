@@ -9,13 +9,13 @@ public static class Storage
     public static Dictionary<string, CoreItem> Items = [];
     public static Dictionary<string, Effect> Effects = [];
     public static Dictionary<string, Stash> Stashes = [];
-    public static Dictionary<string, List<ItemRecreator>> PredefinedCharactersInventory = [];
+    public static Dictionary<string, Inventory> Inventories = [];
 
     public static void ClearAll()
     {
         Items.Clear();
         Effects.Clear();
         Stashes.Clear();
-        PredefinedCharactersInventory.Clear();
+        Inventories.Clear();
     }
 }

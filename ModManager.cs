@@ -6,14 +6,14 @@ using EIV_JsonLib.Base;
 using EIV_JsonLib.Json;
 using ModAPI;
 using System.Reflection;
-using System.Text.Json;
 using System.Text;
+using System.Text.Json;
 
 namespace EIV_Common;
 
 public class ModManager
 {
-    public delegate void LoadModWithTypeDelegate(Type? retType, object? obj);
+    public delegate void LoadModWithTypeDelegate(Type retType, object? obj);
 
     public static void Init()
     {
@@ -31,7 +31,7 @@ public class ModManager
 
     public static void LoadAssets_Unpack(string dir)
     {
-        foreach (string json in Directory.GetFiles(Path.Combine(dir,  "Item"), "*.json", SearchOption.AllDirectories))
+        foreach (string json in Directory.GetFiles(Path.Combine(dir, "Item"), "*.json", SearchOption.AllDirectories))
         {
             CoreItem? item = File.ReadAllText(json).ConvertFromString();
             if (item != null)
@@ -47,13 +47,13 @@ public class ModManager
         {
             Stash? stash = JsonSerializer.Deserialize<Stash>(File.ReadAllText(json), ConvertHelper.GetSerializerSettings());
             if (stash != null)
-                Storage.Stashes.TryAdd(json, stash);
+                Storage.Stashes.TryAdd(NormalizeMod(json, Path.Combine(dir, "Stash")), stash);
         }
         foreach (string? json in Directory.GetFiles(Path.Combine(dir, "Inventory"), "*.json", SearchOption.AllDirectories))
         {
-            List<ItemRecreator>? recreators = JsonSerializer.Deserialize<List<ItemRecreator>>(File.ReadAllText(json), ConvertHelper.GetSerializerSettings());
-            if (recreators != null)
-                Storage.PredefinedCharactersInventory.TryAdd(json, recreators);
+            Inventory? inventory = JsonSerializer.Deserialize<Inventory>(File.ReadAllText(json), ConvertHelper.GetSerializerSettings());
+            if (inventory != null)
+                Storage.Inventories.TryAdd(NormalizeMod(json, Path.Combine(dir, "Inventory")), inventory);
         }
     }
 
@@ -75,16 +75,22 @@ public class ModManager
         {
             Stash? stash = JsonSerializer.Deserialize<Stash>(Encoding.UTF8.GetString(reader.GetFileData(item)), ConvertHelper.GetSerializerSettings());
             if (stash != null)
-                Storage.Stashes.TryAdd(item, stash);
+                Storage.Stashes.TryAdd(NormalizeMod(item), stash);
         }
         foreach (string? item in reader.Pack.FileNames.Where(x => x.Contains(".json") && x.Contains("Inventory")))
         {
-            List<ItemRecreator>? recreators = JsonSerializer.Deserialize<List<ItemRecreator>>(Encoding.UTF8.GetString(reader.GetFileData(item)), ConvertHelper.GetSerializerSettings());
-            if (recreators != null)
-                Storage.PredefinedCharactersInventory.TryAdd(item, recreators);
+            Inventory? inventory = JsonSerializer.Deserialize<Inventory>(Encoding.UTF8.GetString(reader.GetFileData(item)), ConvertHelper.GetSerializerSettings());
+            if (inventory != null)
+                Storage.Inventories.TryAdd(NormalizeMod(item), inventory);
         }
     }
 
+    /// <summary>
+    /// Load One Type that is assignable from <paramref name="intefaceType"/>
+    /// </summary>
+    /// <param name="intefaceType"></param>
+    /// <param name="assembly"></param>
+    /// <param name="delegate"></param>
     public static void LoadMod(Type intefaceType, Assembly assembly, LoadModWithTypeDelegate @delegate)
     {
         Type? type = assembly.GetTypes().Where(intefaceType.IsAssignableFrom).ToList().FirstOrDefault();
@@ -94,11 +100,26 @@ public class ModManager
         @delegate.Invoke(type, Activator.CreateInstance(type!));
     }
 
+    /// <summary>
+    /// Load ALL type that is is assignable from <paramref name="intefaceType"/>
+    /// </summary>
+    /// <param name="intefaceType"></param>
+    /// <param name="assembly"></param>
+    /// <param name="delegate"></param>
+    public static void LoadMods(Type intefaceType, Assembly assembly, LoadModWithTypeDelegate @delegate)
+    {
+        List<Type> types = assembly.GetTypes().Where(intefaceType.IsAssignableFrom).ToList();
+        if (types.Count == 0)
+            return;
+
+        types.ForEach(t => @delegate.Invoke(t, Activator.CreateInstance(t)));
+    }
+
     public static void LoadMod_JsonLib(Assembly assembly)
     {
         LoadMod(typeof(IJsonLibConverter), assembly, Delegate);
 
-        static void Delegate(Type? retType, object? obj)
+        static void Delegate(Type retType, object? obj)
         {
             IJsonLibConverter? jsonLib = (IJsonLibConverter?)obj;
             if (jsonLib == null)
@@ -111,5 +132,15 @@ public class ModManager
     {
         Storage.ClearAll();
         MainLoader.DeInit();
+    }
+
+    public static string NormalizeMod(string path, string parentPath = "")
+    {
+        path = path.Replace('\\', '_').Replace('/', '_');
+        if (path.Contains(".json"))
+            path = path.Split(".json")[0];
+        if (parentPath != "")
+            path = path.Replace(parentPath, "");
+        return path;
     }
 }

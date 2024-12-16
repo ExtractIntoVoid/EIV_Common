@@ -5,11 +5,11 @@ namespace EIV_Common.JsonStuff;
 public static class MagazineHelper
 {
     /// <summary>
-    /// Checking if the AmmoType is compatible in with the Magazine
+    /// Checking the <paramref name="ammoId"/> is compatible in with the <see cref="Magazine"/>
     /// </summary>
     /// <param name="magazine">The Magazine</param>
-    /// <param name="ammoId">BaseId of the Ammo</param>
-    /// <returns>False if AmmoId is not an IAmmo, and if SupportedAmmo doesnt contains either the BaseId or the Tags</returns>
+    /// <param name="ammoId">Id of the Ammo</param>
+    /// <returns>False if <paramref name="ammoId"/> is not <see cref="Ammo"/>, and if SupportedAmmo doesnt contains either the BaseId or the Tags</returns>
     public static bool CheckAmmoCompatible(this Magazine magazine, string ammoId)
     {
         Ammo? ammo = ItemMaker.CreateItem<Ammo>(ammoId);
@@ -19,11 +19,11 @@ public static class MagazineHelper
     }
 
     /// <summary>
-    /// Inserting Ammos into the Magazine
+    /// Inserting <see cref="Ammo"/> into the <see cref="Magazine"/>
     /// </summary>
     /// <param name="magazine">The Magazine</param>
-    /// <param name="ammoId">BaseId of the Ammo</param>
-    /// <param name="ammoCount">The amount to insert with this Type</param>
+    /// <param name="ammoId">Id of the Ammo</param>
+    /// <param name="ammoCount">The amount to insert with this Ammo</param>
     /// <returns>False if it couldn't insert, or full, or when its filled and wants to add more | True when successfully added all to magazine</returns>
     public static bool TryInsertAmmos(this Magazine magazine, string ammoId, uint ammoCount)
     {
@@ -48,10 +48,10 @@ public static class MagazineHelper
     }
 
     /// <summary>
-    /// Inserting 1 Ammo into the Magazine
+    /// Inserting an <see cref="Ammo"/> into the <see cref="Magazine"/>
     /// </summary>
     /// <param name="magazine">The Magazine</param>
-    /// <param name="ammoId">BaseId of the Ammo</param>
+    /// <param name="ammoId">Id of the Ammo</param>
     /// <returns>False if it couldn't insert, or full, or when its filled | True when successfully added to magazine</returns>
     public static bool TryInsertAmmo(this Magazine magazine, string ammoId)
     {

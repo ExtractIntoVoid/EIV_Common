@@ -1,10 +1,15 @@
 ﻿using Serilog;
+using Serilog.Core;
 
 namespace EIV_Common.Logger;
 
 public static class MainLog
 {
-    public static ILogger? logger = null;
+    public static ILogger? logger { get; internal set; } = null;
+    public static LoggingLevelSwitch LevelSwitch { get; internal set; } = new()
+    {
+        MinimumLevel = Serilog.Events.LogEventLevel.Information,
+    };
 
     /// <summary>
     /// Create new <see cref="logger"/>
@@ -12,13 +17,8 @@ public static class MainLog
     public static void CreateNew()
     {
         logger = new LoggerConfiguration()
-#if DEBUG
-            .MinimumLevel.Verbose()
-#else
-            .MinimumLevel.Information()
-#endif
+            .MinimumLevel.ControlledBy(LevelSwitch)
             .Enrich.With(new MethodEnricher())
-            //.MinimumLevel.Override("EIV_JsonLib", Serilog.Events.LogEventLevel.Information)
             .WriteTo.File("logs.txt", outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] ({Method}) {Message:lj}{NewLine}{Exception}")
             .WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss.fff zzz} [{Level:u3}] ({Method}) {Message:lj}{NewLine}{Exception}")
             .CreateLogger();
@@ -31,11 +31,10 @@ public static class MainLog
     /// </summary>
     public static void Close()
     {
-        if (logger != null)
-        {
-            logger.Information("Application closed!");
-            Log.CloseAndFlush();
-            logger = null;
-        }
+        if (logger == null)
+            return;
+        logger.Information("Application closed!");
+        Log.CloseAndFlush();
+        logger = null;
     }
 }

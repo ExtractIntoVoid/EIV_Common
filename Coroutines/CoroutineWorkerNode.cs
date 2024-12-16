@@ -13,7 +13,7 @@ public partial class CoroutineWorkerNode : Node
         get
         {
             if (_instance == null)
-                return _instance = new();
+                _instance = new();
             return _instance;
         }
         set
