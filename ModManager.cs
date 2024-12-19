@@ -4,6 +4,8 @@ using EIV_DataPack;
 using EIV_JsonLib;
 using EIV_JsonLib.Base;
 using EIV_JsonLib.Json;
+using EIV_JsonLib.Profile;
+using EIV_JsonLib.Profile.ProfileModules;
 using ModAPI;
 using System.Reflection;
 using System.Text;
@@ -55,6 +57,13 @@ public class ModManager
             if (inventory != null)
                 Storage.Inventories.TryAdd(NormalizeMod(json, Path.Combine(dir, "Inventory")), inventory);
         }
+        foreach (string? json in Directory.GetFiles(Path.Combine(dir, "Origins"), "*.json", SearchOption.AllDirectories))
+        {
+            List<IProfileModule>? profileModules = JsonSerializer.Deserialize<List<IProfileModule>>(File.ReadAllText(json), ConvertHelper.GetSerializerSettings());
+            if (profileModules != null)
+                //TODO: Make the Key the name of the json file
+                Storage.OriginToModules.TryAdd(NormalizeMod(json, Path.Combine(dir, "Origins")), profileModules);
+        }
     }
 
     public static void LoadAssets_Pack(DataPackReader reader)
@@ -82,6 +91,13 @@ public class ModManager
             Inventory? inventory = JsonSerializer.Deserialize<Inventory>(Encoding.UTF8.GetString(reader.GetFileData(item)), ConvertHelper.GetSerializerSettings());
             if (inventory != null)
                 Storage.Inventories.TryAdd(NormalizeMod(item), inventory);
+        }
+        foreach (string? item in reader.Pack.FileNames.Where(x => x.Contains(".json") && x.Contains("Origins")))
+        {
+            List<IProfileModule>? profileModules = JsonSerializer.Deserialize<List<IProfileModule>>(Encoding.UTF8.GetString(reader.GetFileData(item)), ConvertHelper.GetSerializerSettings());
+            if (profileModules != null)
+                //TODO: Make the Key the name of the json file
+                Storage.OriginToModules.TryAdd(NormalizeMod(item), profileModules);
         }
     }
 

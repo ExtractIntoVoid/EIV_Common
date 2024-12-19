@@ -17,7 +17,7 @@ public static class RigHelper
 
     public static bool CheckCompatibleItemType(this Rig rig, string itemId)
     {
-        // If this emtpy means we accept item!
+        // If this emtpy means we accept any item!
         if (rig.ItemTypesAccepted.Count == 0)
             return true;
 
@@ -27,7 +27,7 @@ public static class RigHelper
 
     public static bool CheckCompatibleItem(this Rig rig, string itemId)
     {
-        // If this emtpy means we accept every plate!
+        // If this emtpy means we accept any item!
         if (rig.SpecificItemsAccepted.Count == 0)
             return true;
 
@@ -64,7 +64,7 @@ public static class RigHelper
         if (rig.ItemIds.Count == rig.MaxItem)
             return false;
 
-        rig.ItemIds.Add(itemId);
+        rig.ItemIds.Add(item);
         return true;
     }
 

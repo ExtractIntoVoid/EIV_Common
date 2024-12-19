@@ -11,7 +11,7 @@ public class UserInfoJson
     public string Name { get; set; } = string.Empty;
     public string UserId { get; set; } = string.Empty;
     public string Version { get; set; } = string.Empty;
-    public object AdditionalData { get; set; } = new();
+    public string AdditionalData { get; set; } = string.Empty;
 
     public string CreateUserId()
     {
