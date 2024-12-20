@@ -4,7 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>0.0.2.0-rc1</Version>
+        <Version>0.0.2.0</Version>
         <Description>Common utilites for EIV.</Description>
         <Title>Common utilites for EIV</Title>
         <Authors>Extract Into Void</Authors>
@@ -15,11 +15,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <None Include="LICENSE.txt">
+      <None Include="..\LICENSE.txt">
         <Pack>True</Pack>
         <PackagePath>\</PackagePath>
       </None>
-      <None Include="README.md">
+      <None Include="..\README.md">
         <Pack>True</Pack>
         <PackagePath>\</PackagePath>
       </None>
