@@ -32,7 +32,7 @@ public class CoroutineTest
             // wait until test over.
         }
         stopwatch.Stop();
-        Thread.Sleep(10);
+        Thread.Sleep(100);
         Assert.That(CoroutineWorkerCustom.IsCoroutineExists(handle), Is.EqualTo(false));
         Assert.That(CoroutineWorkerCustom.IsCoroutineSuccessInstance(handle), Is.EqualTo(false));
     }
@@ -44,7 +44,7 @@ public class CoroutineTest
         Assert.That(CoroutineWorkerCustom.IsCoroutineExists(handle), Is.EqualTo(true));
         Assert.That(CoroutineWorkerCustom.IsCoroutineSuccessInstance(handle), Is.EqualTo(false));
         CoroutineWorkerCustom.KillCoroutineTagInstance("Test");
-        Thread.Sleep(10);
+        Thread.Sleep(100);
         Assert.That(CoroutineWorkerCustom.IsCoroutineExists(handle), Is.EqualTo(false));
     }
 
@@ -55,7 +55,7 @@ public class CoroutineTest
         Assert.That(CoroutineWorkerCustom.IsCoroutineExists(handle), Is.EqualTo(true));
         Assert.That(CoroutineWorkerCustom.IsCoroutineSuccessInstance(handle), Is.EqualTo(false));
         CoroutineWorkerCustom.KillCoroutineInstance(handle);
-        Thread.Sleep(10);
+        Thread.Sleep(100);
         Assert.That(CoroutineWorkerCustom.IsCoroutineExists(handle), Is.EqualTo(false));
     }
 
