@@ -61,10 +61,10 @@ public static class RigHelper
         if (!rig.CheckCompatibleItemType(item.ItemType))
             return false;
 
-        if (rig.ItemIds.Count == rig.MaxItem)
+        if (!rig.CanAddItem(item))
             return false;
 
-        rig.ItemIds.Add(item);
+        rig.Items.Add(item);
         return true;
     }
 

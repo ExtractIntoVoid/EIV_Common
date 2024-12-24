@@ -162,7 +162,7 @@ public partial class CoroutineWorkerNode : Node
     }
     #endregion
     #region Coroutine Creators
-    public static Coroutine? StartCoroutine(IEnumerator<double> objects, CoroutineType type = CoroutineType.Process, string tag = "")
+    public static CoroutineHandle? StartCoroutine(IEnumerator<double> objects, CoroutineType type = CoroutineType.Process, string tag = "")
     {
         Coroutine coroutine = new(objects, type, tag);
         switch (type)
@@ -180,15 +180,15 @@ public partial class CoroutineWorkerNode : Node
         Instance._delays.Add(0);
         return coroutine;
     }
-    public static Coroutine? CallDelayed(TimeSpan timeSpan, Action action, CoroutineType type = CoroutineType.Process, string tag = "")
+    public static CoroutineHandle? CallDelayed(TimeSpan timeSpan, Action action, CoroutineType type = CoroutineType.Process, string tag = "")
     {
         return StartCoroutine(_DelayedCall(timeSpan, action), type, tag);
     }
-    public static Coroutine? CallContinuously(Action action, CoroutineType type = CoroutineType.Process, string tag = "")
+    public static CoroutineHandle? CallContinuously(Action action, CoroutineType type = CoroutineType.Process, string tag = "")
     {
         return StartCoroutine(_CallContinuously(TimeSpan.Zero, action), type, tag);
     }
-    public static Coroutine? CallPeriodically(TimeSpan timeSpan, Action action, CoroutineType type = CoroutineType.Process, string tag = "")
+    public static CoroutineHandle? CallPeriodically(TimeSpan timeSpan, Action action, CoroutineType type = CoroutineType.Process, string tag = "")
     {
         return StartCoroutine(_CallContinuously(timeSpan, action), type, tag);
     }
@@ -287,8 +287,7 @@ public partial class CoroutineWorkerNode : Node
         _replacementFunction = ReturnTmpRefForRepFunc;
         yield return double.NaN;
     }
-    #endregion
-    #region IEnumerators
+
     private static IEnumerator<double> _DelayedCall(TimeSpan timeSpan, Action action)
     {
         yield return timeSpan.TotalSeconds;
@@ -334,7 +333,7 @@ public partial class CoroutineWorkerNode : Node
         return double.NaN;
     }
 
-    public static double StartAfterCoroutine(Coroutine coroutine)
+    public static double StartAfterCoroutine(CoroutineHandle coroutine)
     {
         Coroutine cor = GetCoroutine(coroutine);
         if (cor.IsSuccess)
@@ -356,30 +355,40 @@ public partial class CoroutineWorkerNode : Node
     #endregion
     #region Statis funcs
 
-    public static void KillCoroutines(params Coroutine[] coroutines)
+    private static int GetCoroutineIndex(CoroutineHandle coroutine)
     {
-        for (int i = 0; i < coroutines.Length; i++)
+        return coroutine.CoroutineType switch
+        {
+            CoroutineType.Process => Instance._processCoroutines.FindIndex(x => x.Equals(coroutine)),
+            CoroutineType.PhysicsProcess => Instance._physicsCoroutines.FindIndex(x => x.Equals(coroutine)),
+            _ => -1,
+        };
+    }
+
+    private static Coroutine GetCoroutine(CoroutineHandle coroutine)
+    {
+        return coroutine.CoroutineType switch
+        {
+            CoroutineType.Process => Instance._processCoroutines.FirstOrDefault(x => x.Equals(coroutine)),
+            CoroutineType.PhysicsProcess => Instance._physicsCoroutines.FirstOrDefault(x => x.Equals(coroutine)),
+            _ => default,
+        };
+    }
+
+    public static void KillCoroutines(IList<CoroutineHandle> coroutines)
+    {
+        for (int i = 0; i < coroutines.Count; i++)
         {
             KillCoroutineInstance(coroutines[i]);
         }
     }
 
-    private static void KillCoroutines(List<Coroutine> coroutines)
-    {
-        coroutines.ForEach(KillCoroutineInstance);
-    }
-
-    public static void KillCoroutineTag(string Tag)
-    {
-        KillCoroutines(Instance._physicsCoroutines.Where(x => x.Tag == Tag).ToList());
-        KillCoroutines(Instance._processCoroutines.Where(x => x.Tag == Tag).ToList());
-    }
-
-    public static void KillCoroutineInstance(Coroutine coroutine)
+    public static void KillCoroutineInstance(CoroutineHandle coroutine)
     {
         Instance.KillCoroutine(coroutine);
     }
-    public void KillCoroutine(Coroutine coroutine)
+
+    public void KillCoroutine(CoroutineHandle coroutine)
     {
         int index = GetCoroutineIndex(coroutine);
         if (index == -1)
@@ -406,31 +415,26 @@ public partial class CoroutineWorkerNode : Node
         }
     }
 
-    public static int GetCoroutineIndex(Coroutine coroutine)
+    public static void KillCoroutineTagInstance(string Tag)
     {
-        return coroutine.CoroutineType switch
-        {
-            CoroutineType.Process => Instance._processCoroutines.FindIndex(x => x.Equals(coroutine)),
-            CoroutineType.PhysicsProcess => Instance._physicsCoroutines.FindIndex(x => x.Equals(coroutine)),
-            _ => -1,
-        };
+        Instance.KillCoroutineTag(Tag);
     }
 
-    public static Coroutine GetCoroutine(Coroutine coroutine)
+    public void KillCoroutineTag(string tag)
     {
-        return coroutine.CoroutineType switch
+        _mutex.Lock();
         {
-            CoroutineType.Process => Instance._processCoroutines.FirstOrDefault(x => x.Equals(coroutine)),
-            CoroutineType.PhysicsProcess => Instance._physicsCoroutines.FirstOrDefault(x => x.Equals(coroutine)),
-            _ => default,
-        };
+            KillCoroutines(Instance._processCoroutines.Where(x => x.Tag == tag).Select(x => (CoroutineHandle)x).ToList());
+            KillCoroutines(Instance._processCoroutines.Where(x => x.Tag == tag).Select(x => (CoroutineHandle)x).ToList());
+            _mutex.Unlock();
+        }
     }
 
     /// <summary>
     /// Pausing or Resuming a Coroutine. 
     /// </summary>
     /// <param name="coroutine">The coroute</param>
-    public static void PauseCoroutineInstance(Coroutine coroutine)
+    public static void PauseCoroutineInstance(CoroutineHandle coroutine)
     {
         Instance.PauseCoroutine(coroutine);
     }
@@ -439,7 +443,7 @@ public partial class CoroutineWorkerNode : Node
     /// Pausing or Resuming a Coroutine. 
     /// </summary>
     /// <param name="coroutine">The coroute</param>
-    public void PauseCoroutine(Coroutine coroutine)
+    public void PauseCoroutine(CoroutineHandle coroutine)
     {
         int index = GetCoroutineIndex(coroutine);
         if (index == -1)
@@ -463,6 +467,60 @@ public partial class CoroutineWorkerNode : Node
             _mutex.Unlock();
         }
     }
+    public static bool IsCoroutineExistsInstance(CoroutineHandle coroutine)
+    {
+
+        return Instance.IsCoroutineExists(coroutine);
+    }
+
+    public bool IsCoroutineExists(CoroutineHandle coroutine)
+    {
+        bool IsExist = false;
+        _mutex.Lock();
+        {
+            IsExist = GetCoroutineIndex(coroutine) != -1;
+            _mutex.Unlock();
+        }
+        return IsExist;
+    }
+
+    public static bool IsCoroutineRunningInstance(CoroutineHandle coroutine)
+    {
+        return Instance.IsCoroutineRunning(coroutine);
+    }
+
+    public bool IsCoroutineRunning(CoroutineHandle coroutine)
+    {
+        bool isRunning = false;
+        _mutex.Lock();
+        {
+            isRunning = GetCoroutine(coroutine).IsRunning;
+            _mutex.Unlock();
+        }
+        return isRunning;
+    }
+
+    public static bool IsCoroutineSuccessInstance(CoroutineHandle coroutine)
+    {
+        return Instance.IsCoroutineSuccess(coroutine);
+    }
+
+    public bool IsCoroutineSuccess(CoroutineHandle coroutine)
+    {
+        bool success = false;
+        _mutex.Lock();
+        {
+            success = GetCoroutine(coroutine).IsSuccess;
+            _mutex.Unlock();
+        }
+        return success;
+    }
+
+    public static bool HasAnyCoroutines()
+    {
+        return Instance._processCoroutines.Count != 0 && Instance._physicsCoroutines.Count != 0;
+    }
+
 
     #endregion
 }

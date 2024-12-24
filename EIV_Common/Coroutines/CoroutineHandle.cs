@@ -5,10 +5,11 @@ namespace EIV_Common.Coroutines;
 public struct CoroutineHandle : IEquatable<CoroutineHandle>, IEqualityComparer<CoroutineHandle>
 {
     public int CoroutineHash;
-
-    public CoroutineHandle(int hash)
+    public CoroutineType CoroutineType;
+    public CoroutineHandle(int hash, CoroutineType type)
     {
         CoroutineHash = hash;
+        CoroutineType = type;
     }
 
     public bool Equals(CoroutineHandle other)
@@ -31,10 +32,6 @@ public struct CoroutineHandle : IEquatable<CoroutineHandle>, IEqualityComparer<C
         return obj.CoroutineHash;
     }
 
-    public static implicit operator CoroutineHandle(int hash)
-    {
-        return new CoroutineHandle(hash);
-    }
 
     public static implicit operator int(CoroutineHandle coroutineHandle)
     {
@@ -43,6 +40,6 @@ public struct CoroutineHandle : IEquatable<CoroutineHandle>, IEqualityComparer<C
 
     public static implicit operator CoroutineHandle(Coroutine coroutine)
     {
-        return new CoroutineHandle(coroutine.GetHashCode());
+        return new CoroutineHandle(coroutine.GetHashCode(), coroutine.CoroutineType);
     }
 }
