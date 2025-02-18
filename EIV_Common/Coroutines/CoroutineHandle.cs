@@ -42,4 +42,19 @@ public struct CoroutineHandle : IEquatable<CoroutineHandle>, IEqualityComparer<C
     {
         return new CoroutineHandle(coroutine.GetHashCode(), coroutine.CoroutineType);
     }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is CoroutineHandle && Equals((CoroutineHandle)obj);
+    }
+
+    public static bool operator ==(CoroutineHandle left, CoroutineHandle right)
+    {
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(CoroutineHandle left, CoroutineHandle right)
+    {
+        return !(left == right);
+    }
 }

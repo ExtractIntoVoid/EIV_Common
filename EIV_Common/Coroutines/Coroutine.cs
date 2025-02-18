@@ -38,4 +38,19 @@ public struct Coroutine(IEnumerator<double> enumerator, CoroutineType type, stri
     {
         return $"{this.GetHashCode()} IsRunning: {IsRunning}, ShouldKill {ShouldKill}, ShouldPause: {ShouldPause}, IsSuccess: {IsSuccess}, CoroutineType: {CoroutineType} Tag: {Tag}";
     }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is Coroutine && Equals((Coroutine)obj);
+    }
+
+    public static bool operator ==(Coroutine left, Coroutine right)
+    {
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(Coroutine left, Coroutine right)
+    {
+        return !(left == right);
+    }
 }

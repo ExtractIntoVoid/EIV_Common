@@ -272,7 +272,7 @@ public class CoroutineWorkerCustom
     {
         if (evaluatorFunc == null || !evaluatorFunc())
         {
-            return double.NaN;
+            return 0;
         }
         _tmpRef = evaluatorFunc;
         ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(WaitUntilFalseHelper);
@@ -283,7 +283,7 @@ public class CoroutineWorkerCustom
     {
         if (evaluatorFunc == null || evaluatorFunc())
         {
-            return double.NaN;
+            return 0;
         }
         _tmpRef = evaluatorFunc;
         ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(WaitUntilTrueHelper);
@@ -294,7 +294,7 @@ public class CoroutineWorkerCustom
     {
         if (evaluatorFunc() == T.Zero)
         {
-            return double.NaN;
+            return 0;
         }
         _tmpRef = evaluatorFunc;
         ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(WaitUntilTHelper<T>);
@@ -306,7 +306,7 @@ public class CoroutineWorkerCustom
         Coroutine cor = Instance.CustomCoroutines.FirstOrDefault(x => coroutine.Equals((CoroutineHandle)x));
         if (cor.IsSuccess)
         {
-            return double.NaN;
+            return 0;
         }
         _tmpRef = cor;
         ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(StartAfterCoroutineHelper);

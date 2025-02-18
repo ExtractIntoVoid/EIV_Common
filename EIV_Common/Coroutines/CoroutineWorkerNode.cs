@@ -306,8 +306,8 @@ public partial class CoroutineWorkerNode : Node
     #region Static Floats
     public static double WaitUntilFalse(Func<bool> evaluatorFunc)
     {
-        if (!evaluatorFunc())
-            return double.NaN;
+        if (!evaluatorFunc() || evaluatorFunc == null)
+            return 0;
         _tmpRef = evaluatorFunc;
         _replacementFunction = WaitUntilFalseHelper;
         return double.NaN;
@@ -315,8 +315,8 @@ public partial class CoroutineWorkerNode : Node
 
     public static double WaitUntilTrue(Func<bool> evaluatorFunc)
     {
-        if (evaluatorFunc())
-            return double.NaN;
+        if (evaluatorFunc() || evaluatorFunc == null)
+            return 0;
         _tmpRef = evaluatorFunc;
         _replacementFunction = WaitUntilTrueHelper;
         return double.NaN;
@@ -324,9 +324,9 @@ public partial class CoroutineWorkerNode : Node
 
     public static double WaitUntilZero<T>(Func<T> evaluatorFunc) where T : INumber<T>
     {
-        if (evaluatorFunc() == T.Zero)
+        if (evaluatorFunc() == T.Zero || evaluatorFunc == null)
         {
-            return double.NaN;
+            return 0;
         }
         _tmpRef = evaluatorFunc;
         _replacementFunction = WaitUntilTHelper<T>;
@@ -337,7 +337,7 @@ public partial class CoroutineWorkerNode : Node
     {
         Coroutine cor = GetCoroutine(coroutine);
         if (cor.IsSuccess)
-            return double.NaN;
+            return 0;
         _tmpRef = cor;
         _replacementFunction = StartAfterCoroutineHelper;
         return double.NaN;
@@ -346,7 +346,7 @@ public partial class CoroutineWorkerNode : Node
     public static double WaitUntilSignal(GodotObject godotObject, string signal)
     {
         if (godotObject.ToSignal(godotObject, signal).IsCompleted)
-            return double.NaN;
+            return 0;
         _tmpRef = new ValueTuple<GodotObject, string>(godotObject, signal);
         _replacementFunction = WaitUntilSignalHelper;
         return double.NaN;
