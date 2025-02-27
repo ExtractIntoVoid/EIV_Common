@@ -14,7 +14,7 @@ public struct CoroutineHandle : IEquatable<CoroutineHandle>, IEqualityComparer<C
 
     public bool Equals(CoroutineHandle other)
     {
-        return CoroutineHash == other.CoroutineHash;
+        return CoroutineHash == other.CoroutineHash && CoroutineType == other.CoroutineType;
     }
 
     public bool Equals(CoroutineHandle x, CoroutineHandle y)
@@ -56,5 +56,10 @@ public struct CoroutineHandle : IEquatable<CoroutineHandle>, IEqualityComparer<C
     public static bool operator !=(CoroutineHandle left, CoroutineHandle right)
     {
         return !(left == right);
+    }
+
+    public override string ToString()
+    {
+        return $"Hash: {CoroutineHash}, Type: {CoroutineType}";
     }
 }

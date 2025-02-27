@@ -10,8 +10,8 @@ public struct Coroutine(IEnumerator<double> enumerator, CoroutineType type, stri
     public bool ShouldKill = false;
     public bool ShouldPause;
     public bool IsSuccess = false;
-    public readonly string Tag = tag;
-    public readonly CoroutineType CoroutineType = type;
+    public readonly string Tag => tag;
+    public readonly CoroutineType CoroutineType => type;
     private readonly IEnumerator<double> _baseEnumerator = enumerator;
 
     public override int GetHashCode()

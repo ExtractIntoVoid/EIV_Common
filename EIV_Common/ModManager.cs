@@ -7,6 +7,7 @@ using EIV_JsonLib.Json;
 using EIV_JsonLib.Profile;
 using EIV_JsonLib.Profile.ProfileModules;
 using ModAPI;
+using Serilog;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -129,6 +130,32 @@ public class ModManager
             return;
 
         types.ForEach(t => @delegate.Invoke(t, Activator.CreateInstance(t)));
+    }
+
+    public static void LoadModHarmony(Assembly assembly, string? name = null)
+    {
+        if (name == null)
+        {
+            var asm_name = assembly.GetName();
+            name = $"{asm_name.Name} v{asm_name.Version}";
+        }
+        if (name == " v0.0.0.0") // Is this the right check?
+        {
+            name = assembly.FullName;
+        }
+        ArgumentNullException.ThrowIfNullOrEmpty(name);
+        HarmonyLib.Harmony harmony = new(name);
+        try
+        {
+            
+            harmony.PatchAll();
+        }
+        catch (Exception ex)
+        {
+            harmony.UnpatchAll(name);
+            Log.Error("Exception has been catched! Unpatching everything!\n {Exception}", ex);
+        }
+
     }
 
     public static void LoadMod_JsonLib(Assembly assembly)

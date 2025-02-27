@@ -1,69 +1,316 @@
-﻿using EIV_Common.Logger;
+﻿using Serilog;
 using System.Diagnostics;
-using System.Numerics;
 
 namespace EIV_Common.Coroutines;
-
-public class CoroutineWorkerCustom
+public class CoroutineWorkerCustom : ICoroutineWorker
 {
-    static object? _tmpRef;
-    static Func<IEnumerator<double>, IEnumerator<double>>? ReplacementFunction;
-    static CoroutineWorkerCustom? instance;
-    public static CoroutineWorkerCustom Instance
-    {
-        get
+    private List<(double Delay, Coroutine Cor)> _DelayAndCoroutines = [];
+    public List<(double Delay, Coroutine Cor)> DelayAndCoroutines
+    { 
+        get 
         {
-            if (instance == null)
-                return instance = new();
-            return instance;
-        }
-        set
-        {
-            instance = value;
-        }
+            if (MutexLock())
+            {
+                var to_ret = _DelayAndCoroutines;
+                MutexUnLock();
+                return to_ret;
+            }
+            return [];
+        } 
     }
-    List<double> Delays = [];
-    List<Coroutine> CustomCoroutines = [];
-
-    Thread UpdateThread;
-    Stopwatch Watch;
-    /// <summary>
-    /// Update rate, how many times should it run. (1 / value). Default is 60. (More -> Faster operation)
-    /// </summary>
+    public object? ReplacementObject { get; set; }
+    public Func<IEnumerator<double>, IEnumerator<double>>? ReplacementFunction { get; set; }
+    public bool PauseUpdate { get; set; } = false;
     public static double UpdateRate { get; set; } = 1f / 60f;  // "fps"
+
+    #region Private fields
+    Thread? UpdateThread;
+    Stopwatch Watch = new Stopwatch();
     double prevTime = 0f;
     double accumulator = 0f;
     double TotalTime = 0f;
-    public bool PauseUpdate = false;
+    #endregion
+
+    #region Mutex
     private readonly Mutex _mutex = new();
-    public CoroutineWorkerCustom()
+    public bool MutexLock()
     {
-        Instance = this;
-        Watch = Stopwatch.StartNew();
+        return _mutex.WaitOne(1);
+    }
+
+    public void MutexUnLock()
+    {
+        _mutex.ReleaseMutex();
+    }
+    #endregion
+    #region Basic stuff (Init, Quit, Update)
+    public void Init()
+    {
+        Watch.Start();
         prevTime = Watch.ElapsedMilliseconds / 1000f;
-        UpdateThread = new(Update)
+        UpdateThread = new(ThreadUpdate)
         {
             IsBackground = true
         };
         UpdateThread.Start();
     }
-
-    #region Needed stuff for running
-
-    public void Start()
-    {
-        MainLog.logger?.Debug("CoroutineWorkerCustom started!");
-    }
-
     public void Quit()
     {
         Kill();
-        UpdateThread.Interrupt();
-        MainLog.logger?.Debug("Was run until " + TotalTime);
+        UpdateThread?.Interrupt();
+        UpdateThread = null;
+        Watch.Stop();
+        Log.Debug("Was run until " + TotalTime);
     }
 
-    void Update()
+    public void Update(double deltaTime)
     {
+        Kill();
+        if (MutexLock())
+        {
+            for (int i = 0; i < _DelayAndCoroutines.Count; i++)
+            {
+                ((double Delay, Coroutine Cor) DelayAndCor, int index) cor_delay = new();
+                GetCorAndDelayRef(i, ref cor_delay);
+                Log.Debug("Index: {i}, DT: {DeltaTime} Delay: {Delay}, Cor: {Coroutine}", i, deltaTime, cor_delay.DelayAndCor.Delay, cor_delay.DelayAndCor.Cor);
+                if (cor_delay.DelayAndCor.Delay > 0f)
+                    cor_delay.DelayAndCor.Delay -= deltaTime;
+                if (cor_delay.DelayAndCor.Delay <= 0f)
+                {
+                    CoroutineWork(ref cor_delay);
+                }
+                if (double.IsNaN(cor_delay.DelayAndCor.Delay))
+                {
+                    if (ReplacementFunction != null)
+                    {
+                        cor_delay.DelayAndCor.Cor.Enumerator = ReplacementFunction(cor_delay.DelayAndCor.Cor.Enumerator);
+                        CoroutineWork(ref cor_delay);
+                        ReplacementFunction = null;
+                    }
+                }
+                SetCorAndDelayRef(ref cor_delay);
+            }
+            MutexUnLock();
+        }
+        Kill();
+    }
+    #endregion
+    #region Kills
+    public void KillCoroutineInstance(CoroutineHandle coroutine)
+    {
+        if (MutexLock())
+        {
+            ((double Delay, Coroutine Cor) DelayAndCor, int index) cor_delay = new();
+            GetCorAndDelayRef(coroutine, ref cor_delay);
+            if (cor_delay.index == -1)
+            {
+                Log.Debug("No Coroutine to kill! (Handle was: {Handle})", coroutine);
+                MutexUnLock();
+                return;
+            }
+            cor_delay.DelayAndCor.Cor.ShouldKill = true;
+            Log.Debug("Coroutine {cor} changed ShouldKill state", cor_delay.DelayAndCor.Cor.GetHashCode());
+            SetCorAndDelayRef(ref cor_delay);
+            MutexUnLock();
+        }
+    }
+
+    public void KillCoroutinesInstance(IList<CoroutineHandle> coroutines)
+    {
+        if (MutexLock())
+        {
+            foreach (CoroutineHandle coroutine in coroutines)
+            {
+                ((double Delay, Coroutine Cor) DelayAndCor, int index) cor_delay = new();
+                GetCorAndDelayRef(coroutine, ref cor_delay);
+                if (cor_delay.index == -1)
+                {
+                    Log.Debug("No Coroutine to kill! (Handle was: {Handle})", coroutine);
+                    continue;
+                }
+                cor_delay.DelayAndCor.Cor.ShouldKill = true;
+                Log.Debug("Coroutine {cor} changed ShouldKill state", cor_delay.DelayAndCor.Cor.GetHashCode());
+                SetCorAndDelayRef(ref cor_delay);
+            }
+            MutexUnLock();
+        }
+    }
+
+    public void KillCoroutineTagInstance(string tag)
+    {
+        var cors = DelayAndCoroutines.Where(x => x.Cor.Tag == tag).Select(x => (CoroutineHandle)x.Cor).ToList();
+        KillCoroutinesInstance(cors);
+    }
+    #endregion
+    #region Checks
+    public bool HasAnyCoroutinesInstance()
+    {
+        bool success = false;
+        if (MutexLock())
+        {
+            success = DelayAndCoroutines.Count != 0;
+            MutexUnLock();
+        }
+        return success;
+    }
+
+    public bool IsCoroutineExistsInstance(CoroutineHandle coroutine)
+    {
+        return GetCoroutineIndex(coroutine) != -1;
+    }
+
+    public bool IsCoroutineSuccessInstance(CoroutineHandle coroutine)
+    {
+        return GetCoroutine(coroutine).IsSuccess;
+    }
+    public bool IsCoroutineRunningInstance(CoroutineHandle coroutine)
+    {
+        return GetCoroutine(coroutine).IsRunning;
+    }
+    #endregion
+    #region Other Coroutine stuff
+    public void PauseCoroutineInstance(CoroutineHandle coroutine)
+    {
+        if (GetCoroutineIndex(coroutine) == -1)
+            return;
+        if (MutexLock())
+        {
+            ((double Delay, Coroutine Cor) DelayAndCor, int index) cor_delay = new();
+            GetCorAndDelayRef(coroutine, ref cor_delay);
+            if (cor_delay.index == -1)
+            {
+                Log.Debug("No Coroutine to Pause! (Handle was: {Handle})", coroutine);
+                MutexUnLock();
+                return;
+            }
+            cor_delay.DelayAndCor.Cor.ShouldPause = !cor_delay.DelayAndCor.Cor.ShouldPause;
+            Log.Debug("Coroutine {cor} changed ShouldPause state", cor_delay.DelayAndCor.Cor.GetHashCode());
+            SetCorAndDelayRef(ref cor_delay);
+            MutexUnLock();
+        }
+    }
+    public void AddCoroutineInstance(Coroutine coroutine)
+    {
+        if (MutexLock())
+        {
+            _DelayAndCoroutines.Add((0, coroutine));
+            MutexUnLock();
+        }
+    }
+    public int GetCoroutineIndex(CoroutineHandle coroutine)
+    {
+        if (MutexLock())
+        {
+            int index = _DelayAndCoroutines.FindIndex(x => coroutine.Equals((CoroutineHandle)x.Cor));
+            if (index < 0)
+            {
+                MutexUnLock();
+                return -1;
+            }
+            MutexUnLock();
+            return index;
+        }
+        return -1;
+    }
+
+    public Coroutine GetCoroutine(CoroutineHandle coroutine)
+    {
+        if (MutexLock())
+        {
+            int index = _DelayAndCoroutines.FindIndex(x => coroutine.Equals((CoroutineHandle)x.Cor));
+            if (index < 0)
+            {
+                MutexUnLock();
+                return default;
+            }
+            MutexUnLock();
+            return _DelayAndCoroutines[index].Cor;
+        }
+        return default;
+    }
+    #endregion
+    #region Private stuff
+    private void CoroutineWork(ref ((double Delay, Coroutine Cor) DelayAndCor, int index) ref_values)
+    {
+        if (ref_values.DelayAndCor.Cor.ShouldKill)
+            return;
+        if (ref_values.DelayAndCor.Cor.ShouldPause)
+            return;
+        if (ref_values.DelayAndCor.Cor.IsSuccess)
+            return;
+        ref_values.DelayAndCor.Cor.IsRunning = true;
+        if (!MoveNext(ref ref_values))
+        {
+            ref_values.DelayAndCor.Cor.IsRunning = false;
+            ref_values.DelayAndCor.Cor.IsSuccess = true;
+            ref_values.DelayAndCor.Cor.ShouldKill = true;
+            Log.Debug("Coroutine {cor} changed states", ref_values.DelayAndCor.Cor);
+        }
+    }
+
+    private bool MoveNext(ref ((double Delay, Coroutine Cor) DelayAndCor, int index) ref_values)
+    {
+        bool result = ref_values.DelayAndCor.Cor.Enumerator.MoveNext();
+        ref_values.DelayAndCor.Delay = ref_values.DelayAndCor.Cor.Enumerator.Current;
+        return result;
+    }
+    private void Kill()
+    {
+        if (MutexLock())
+        {
+            for (int i = 0; i < _DelayAndCoroutines.Count; i++)
+            {
+                if (_DelayAndCoroutines[i].Cor.ShouldKill)
+                {
+                    _DelayAndCoroutines.RemoveAt(i);
+                }
+            }
+            MutexUnLock();
+        }
+    }
+
+    private void GetCorAndDelayRef(int index, ref ((double Delay, Coroutine Cor), int index) ref_values)
+    {
+        if (index == -1)
+            return;
+        if (MutexLock())
+        {
+            ref_values = (_DelayAndCoroutines[index], index);
+            MutexUnLock();
+        }
+    }
+
+    private void GetCorAndDelayRef(CoroutineHandle coroutine, ref ((double Delay, Coroutine Cor), int index) ref_values)
+    {
+        if (MutexLock())
+        {
+            int index = _DelayAndCoroutines.FindIndex(x => coroutine.Equals((CoroutineHandle)x.Cor));
+            if (index < 0)
+            {
+                ref_values = (default, index);
+                MutexUnLock();
+                return;
+            }
+            ref_values = (_DelayAndCoroutines[index], index);
+            MutexUnLock();
+        }
+    }
+
+    private void SetCorAndDelayRef(ref ((double Delay, Coroutine Cor) DelayAndCor, int index) ref_values)
+    {
+        if (ref_values.index == -1)
+            return;
+        if (MutexLock())
+        {
+            _DelayAndCoroutines[ref_values.index] = ref_values.DelayAndCor;
+            MutexUnLock();
+        }
+    }
+    private void ThreadUpdate()
+    {
+        if (UpdateThread == null)
+            return;
+        Log.Debug("UpdateThread.ThreadState: {state}", UpdateThread.ThreadState);
         while (UpdateThread.ThreadState == System.Threading.ThreadState.Background)
         {
             if (PauseUpdate)
@@ -76,364 +323,12 @@ public class CoroutineWorkerCustom
             if (accumulator > UpdateRate)
             {
                 accumulator -= UpdateRate;
-                CustomCorUpdate(UpdateRate);
+                Update(UpdateRate);
                 TotalTime += UpdateRate;
             }
         }
     }
-
-
-    void CustomCorUpdate(double deltaTime)
-    {
-        Kill();
-        if (_mutex.WaitOne(1))
-        {
-
-            for (int i = 0; i < Instance.CustomCoroutines.Count; i++)
-            {
-                Coroutine item = Instance.CustomCoroutines[i];
-                MainLog.logger?.Debug(Instance.Delays[i] + " " + i + " " + deltaTime + " " + item);
-                if (Instance.Delays[i] > 0f)
-                    Instance.Delays[i] -= deltaTime;
-                if (Instance.Delays[i] <= 0f)
-                {
-                    CoroutineWork(ref item, i);
-                }
-                if (double.IsNaN(Instance.Delays[i]))
-                {
-                    if (ReplacementFunction != null)
-                    {
-                        item.Enumerator = ReplacementFunction(item.Enumerator);
-                        CoroutineWork(ref item, i);
-                        ReplacementFunction = null;
-                    }
-                }
-                Instance.CustomCoroutines[i] = item;
-            }
-            _mutex.ReleaseMutex();
-        }
-        Kill();
-    }
-
-    private void Kill()
-    {
-        if (_mutex.WaitOne(1))
-        {
-            for (int i = 0; i < Instance.CustomCoroutines.Count; i++)
-            {
-                Coroutine item = Instance.CustomCoroutines[i];
-                if (item.ShouldKill)
-                {
-                    Instance.CustomCoroutines.Remove(item);
-                    Instance.Delays.RemoveAt(i);
-                }
-            }
-            _mutex.ReleaseMutex();
-        }
-    }
-
-    private void CoroutineWork(ref Coroutine coroutine, int index)
-    {
-        if (coroutine.ShouldKill)
-            return;
-        if (coroutine.ShouldPause)
-            return;
-        if (coroutine.IsSuccess)
-            return;
-        coroutine.IsRunning = true;
-        if (!MoveNext(ref coroutine, index))
-        {
-            coroutine.IsRunning = false;
-            coroutine.IsSuccess = true;
-            coroutine.ShouldKill = true;
-        }
-    }
-
-    private bool MoveNext(ref Coroutine coroutine, int index)
-    {
-        bool result = coroutine.Enumerator.MoveNext();
-        Instance.Delays[index] = coroutine.Enumerator.Current;
-        return result;
-    }
     #endregion
-    #region Coroutine Creators
-    public static CoroutineHandle StartCoroutine(IEnumerator<double> objects, CoroutineType type = CoroutineType.Custom, string tag = "")
-    {
-        Coroutine coroutine = new(objects, type, tag);
-        MainLog.logger?.Debug(coroutine.ToString());
-        Instance.CustomCoroutines.Add(coroutine);
-        Instance.Delays.Add(0);
-        return coroutine;
-    }
-    public static CoroutineHandle CallDelayed(TimeSpan timeSpan, Action action, CoroutineType type = CoroutineType.Custom, string tag = "")
-    {
-        return StartCoroutine(_DelayedCall(timeSpan, action), type, tag);
-    }
-    public static CoroutineHandle CallContinuously(Action action, CoroutineType type = CoroutineType.Custom, string tag = "")
-    {
-        return StartCoroutine(_CallContinuously(TimeSpan.Zero, action), type, tag);
-    }
-    public static CoroutineHandle CallPeriodically(TimeSpan timeSpan, Action action, CoroutineType type = CoroutineType.Custom, string tag = "")
-    {
-        return StartCoroutine(_CallContinuously(timeSpan, action), type, tag);
-    }
-    #endregion
-    #region Static Helpers
-    private static IEnumerator<double> ReturnTmpRefForRepFunc(IEnumerator<double> coptr)
-    {
-        if (_tmpRef == null)
-            return _Empty();
-        if (_tmpRef is IEnumerator<double> that && that != null)
-            return that;
-        return _Empty();
-    }
-
-    private static IEnumerator<double> WaitUntilFalseHelper(IEnumerator<double> coptr)
-    {
-        return _StartWhenDone(_tmpRef as Func<bool>, true, coptr);
-    }
-
-    private static IEnumerator<double> WaitUntilTrueHelper(IEnumerator<double> coptr)
-    {
-        return _StartWhenDone(_tmpRef as Func<bool>, false, coptr);
-    }
-
-    private static IEnumerator<double> WaitUntilTHelper<T>(IEnumerator<double> coptr) where T : INumber<T>
-    {
-        return _StartWhenTDone<T>(_tmpRef as Func<T>, T.Zero, coptr);
-    }
-
-    private static IEnumerator<double> StartAfterCoroutineHelper(IEnumerator<double> coptr)
-    {
-        return _StartWhenDone((Coroutine?)_tmpRef, coptr);
-    }
-    #endregion
-    #region Static IEnumerators
-    private static IEnumerator<double> _StartWhenDone(Func<bool>? evaluatorFunc, bool continueOn, IEnumerator<double> pausedProc)
-    {
-        if (evaluatorFunc == null)
-            yield break;
-        while (evaluatorFunc() == continueOn)
-        {
-            yield return double.NegativeInfinity;
-        }
-        _tmpRef = pausedProc;
-        ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(ReturnTmpRefForRepFunc);
-        yield return float.NaN;
-    }
-
-    private static IEnumerator<double> _StartWhenTDone<T>(Func<T>? evaluatorFunc, T continueOn, IEnumerator<double> pausedProc) where T : INumber<T>
-    {
-        if (evaluatorFunc == null)
-            yield break;
-        while (evaluatorFunc() != continueOn)
-        {
-            yield return double.NegativeInfinity;
-        }
-        _tmpRef = pausedProc;
-        ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(ReturnTmpRefForRepFunc);
-        yield return float.NaN;
-    }
-
-    private static IEnumerator<double> _StartWhenDone(Coroutine? coroutine, IEnumerator<double> pausedProc)
-    {
-        if (!coroutine.HasValue)
-            yield break;
-        coroutine = Instance.CustomCoroutines.Where(x => x.Equals(coroutine)).FirstOrDefault();
-        while (coroutine.Value.IsSuccess != true)
-        {
-            coroutine = Instance.CustomCoroutines.Where(x => x.Equals(coroutine)).FirstOrDefault();
-            yield return double.NegativeInfinity;
-        }
-        _tmpRef = pausedProc;
-        ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(ReturnTmpRefForRepFunc);
-        yield return double.NaN;
-    }
-    private static IEnumerator<double> _Empty()
-    {
-        yield return 0f;
-    }
-    private static IEnumerator<double> _DelayedCall(TimeSpan timeSpan, Action action)
-    {
-        yield return timeSpan.TotalSeconds;
-        action();
-    }
-    private static IEnumerator<double> _CallContinuously(TimeSpan timeSpan, Action action)
-    {
-        while (true)
-        {
-            yield return timeSpan.TotalSeconds;
-            action();
-        }
-    }
-    #endregion
-    #region Static Doubles
-    public static double WaitUntilFalse(Func<bool> evaluatorFunc)
-    {
-        if (evaluatorFunc == null || !evaluatorFunc())
-        {
-            return 0;
-        }
-        _tmpRef = evaluatorFunc;
-        ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(WaitUntilFalseHelper);
-        return double.NaN;
-    }
-
-    public static double WaitUntilTrue(Func<bool> evaluatorFunc)
-    {
-        if (evaluatorFunc == null || evaluatorFunc())
-        {
-            return 0;
-        }
-        _tmpRef = evaluatorFunc;
-        ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(WaitUntilTrueHelper);
-        return double.NaN;
-    }
-
-    public static double WaitUntilZero<T>(Func<T> evaluatorFunc) where T : INumber<T>
-    {
-        if (evaluatorFunc() == T.Zero)
-        {
-            return 0;
-        }
-        _tmpRef = evaluatorFunc;
-        ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(WaitUntilTHelper<T>);
-        return double.NaN;
-    }
-
-    public static double StartAfterCoroutine(CoroutineHandle coroutine)
-    {
-        Coroutine cor = Instance.CustomCoroutines.FirstOrDefault(x => coroutine.Equals((CoroutineHandle)x));
-        if (cor.IsSuccess)
-        {
-            return 0;
-        }
-        _tmpRef = cor;
-        ReplacementFunction = new Func<IEnumerator<double>, IEnumerator<double>>(StartAfterCoroutineHelper);
-        return double.NaN;
-    }
-    #endregion
-    #region Statis funcs
-
-    public static void KillCoroutines(IList<CoroutineHandle> coroutines)
-    {
-        for (int i = 0; i < coroutines.Count; i++)
-        {
-            KillCoroutineInstance(coroutines[i]);
-        }
-    }
-
-    public static void KillCoroutineInstance(CoroutineHandle coroutine)
-    {
-        Instance.KillCoroutine(coroutine);
-    }
-    public void KillCoroutine(CoroutineHandle coroutine)
-    {
-        int index = Instance.CustomCoroutines.FindIndex(x => coroutine.Equals((CoroutineHandle)x));
-        if (index == -1)
-        {
-            MainLog.logger?.Debug("No Coroutine!");
-            return;
-        }
-        if (_mutex.WaitOne(1))
-        {
-            Coroutine cor = Instance.CustomCoroutines[index];
-            cor.ShouldKill = true;
-            Instance.CustomCoroutines[index] = cor;
-            _mutex.ReleaseMutex();
-        }
-    }
-    public static void KillCoroutineTagInstance(string tag)
-    {
-        Instance.KillCoroutineTag(tag);
-    }
-    public void KillCoroutineTag(string tag)
-    {
-        if (_mutex.WaitOne(1))
-        {
-            var cors = Instance.CustomCoroutines.Where(x=>x.Tag == tag).Select(x=>(CoroutineHandle)x).ToList();
-            KillCoroutines(cors);
-            _mutex.ReleaseMutex();
-        }
-    }
-
-    public static void PauseCoroutineInstance(CoroutineHandle coroutine)
-    {
-        Instance.PauseCoroutine(coroutine);
-    }
-
-    public void PauseCoroutine(CoroutineHandle coroutine)
-    {
-        int index = Instance.CustomCoroutines.FindIndex(x => coroutine.Equals((CoroutineHandle)x));
-        if (index == -1)
-        {
-            MainLog.logger?.Debug("No Coroutine!");
-            return;
-        }
-        if (_mutex.WaitOne(1))
-        {
-            Coroutine cor = Instance.CustomCoroutines[index];
-            cor.ShouldPause = !cor.ShouldPause;
-            Instance.CustomCoroutines[index] = cor;
-            _mutex.ReleaseMutex();
-        }
-    }
-
-    public static bool IsCoroutineExists(CoroutineHandle coroutine)
-    {
-        return Instance.CustomCoroutines.FindIndex(x => coroutine.Equals((CoroutineHandle)x)) != -1;
-    }
-
-    public static bool IsCoroutineRunningInstance(CoroutineHandle coroutine)
-    {
-        return Instance.IsCoroutineRunning(coroutine);
-    }
-
-    public bool IsCoroutineRunning(CoroutineHandle coroutine)
-    {
-        int index = Instance.CustomCoroutines.FindIndex(x => coroutine.Equals((CoroutineHandle)x));
-        if (index == -1)
-        {
-            MainLog.logger?.Debug("No Coroutine!");
-            return false;
-        }
-        bool isRunning = false;
-        if (_mutex.WaitOne(1))
-        {
-            Coroutine cor = Instance.CustomCoroutines[index];
-            isRunning = cor.IsRunning;
-            _mutex.ReleaseMutex();
-        }
-        return isRunning;
-    }
-
-    public static bool IsCoroutineSuccessInstance(CoroutineHandle coroutine)
-    {
-        return Instance.IsCoroutineSuccess(coroutine);
-    }
-
-    public bool IsCoroutineSuccess(CoroutineHandle coroutine)
-    {
-        bool sucess = false;
-        if (_mutex.WaitOne(1))
-        {
-            int index = Instance.CustomCoroutines.FindIndex(x => coroutine.Equals((CoroutineHandle)x));
-            if (index == -1)
-            {
-                MainLog.logger?.Debug("No Coroutine!");
-                return false;
-            }
-            Coroutine cor = Instance.CustomCoroutines[index];
-            sucess = cor.IsSuccess;
-            _mutex.ReleaseMutex();
-        }
-        return sucess;
-    }
-
-    public static bool HasAnyCoroutines()
-    {
-        return Instance.CustomCoroutines.Count != 0;
-    }
-
+    #region NewStuff
     #endregion
 }
