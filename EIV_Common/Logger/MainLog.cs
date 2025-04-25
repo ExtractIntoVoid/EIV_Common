@@ -5,7 +5,7 @@ namespace EIV_Common.Logger;
 
 public static class MainLog
 {
-    public static ILogger? logger { get; internal set; } = null;
+    public static ILogger? Logger { get; internal set; } = null;
     public static LoggingLevelSwitch LevelSwitch { get; internal set; } = new()
     {
         MinimumLevel = Serilog.Events.LogEventLevel.Information,
@@ -21,29 +21,29 @@ public static class MainLog
     };
 
     /// <summary>
-    /// Create new <see cref="logger"/>
+    /// Create new <see cref="Logger"/>
     /// </summary>
     public static void CreateNew()
     {
-        logger = new LoggerConfiguration()
+        Logger = new LoggerConfiguration()
             .MinimumLevel.ControlledBy(LevelSwitch)
             .Enrich.With(new MethodEnricher())
             .WriteTo.File("logs.txt", outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] ({Method}) {Message:lj}{NewLine}{Exception}", levelSwitch: FileLevelSwitch)
             .WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss.fff zzz} [{Level:u3}] ({Method}) {Message:lj}{NewLine}{Exception}", levelSwitch: ConsoleLevelSwitch)
             .CreateLogger();
-        logger.Information("Application started!");
-        Log.Logger = logger;
+        Logger.Information("Application started!");
+        Log.Logger = Logger;
     }
 
     /// <summary>
-    /// Close the <see cref="logger"/>
+    /// Close the <see cref="Logger"/>
     /// </summary>
     public static void Close()
     {
-        if (logger == null)
+        if (Logger == null)
             return;
-        logger.Information("Application closed!");
+        Logger.Information("Application closed!");
         Log.CloseAndFlush();
-        logger = null;
+        Logger = null;
     }
 }

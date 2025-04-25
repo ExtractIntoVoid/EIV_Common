@@ -1,6 +1,4 @@
-﻿using Godot;
-
-namespace EIV_Common.Platform;
+﻿namespace EIV_Common.Platform;
 
 /// <summary>
 /// Platform interface
@@ -20,11 +18,11 @@ public interface IPlatform
     public void ShutDown();
 
     /// <summary>
-    /// Getting a Node to add into the GameManager.
+    /// Getting a Object to add into the GameManager.
     /// <br/> If null it will not add it
     /// </summary>
-    /// <returns>Null or a Node</returns>
-    public Node? GetNode();
+    /// <returns>Null or a Object</returns>
+    public object? GetObject();
 
 
     /// <summary>

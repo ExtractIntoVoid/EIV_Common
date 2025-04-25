@@ -1,12 +1,10 @@
-﻿using Godot;
-
-namespace EIV_Common.Platform;
+﻿namespace EIV_Common.Platform;
 
 public class UnknownPlatform : IPlatform
 {
     public PlatformType PlatformType => PlatformType.Unknown;
 
-    public Node? GetNode() => null;
+    public object? GetObject() => null;
 
     public IUser? GetUser() => null;
 

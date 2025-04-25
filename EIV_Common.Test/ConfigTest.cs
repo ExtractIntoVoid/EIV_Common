@@ -7,8 +7,11 @@ public class ConfigTest
     public void TestString()
     {
         ConfigINI.Write("test.ini", "test", "str", "test");
-        Assert.That(File.Exists("test.ini"));
-        Assert.That(ConfigINI.Read("test.ini", "test", "str"), Is.EqualTo("test"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(File.Exists("test.ini"));
+            Assert.That(ConfigINI.Read("test.ini", "test", "str"), Is.EqualTo("test"));
+        });
     }
 
     [Test]

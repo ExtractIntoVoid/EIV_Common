@@ -49,6 +49,15 @@ public static class RigHelper
         return true;
     }
 
+    public static bool TrySetArmorPlate(this Rig rig, ArmorPlate armorPlate)
+    {
+        if (!rig.CheckCompatibleArmorPlate(armorPlate.Id))
+            return false;
+
+        rig.PlateSlot = armorPlate;
+        return true;
+    }
+
     public static bool TryAddItem(this Rig rig, string itemId)
     {
         if (!rig.CheckCompatibleItem(itemId))
@@ -56,6 +65,14 @@ public static class RigHelper
 
         CoreItem? item = ItemMaker.MakeNewItem(itemId);
         if (item == null)
+            return false;
+
+        return TryAddItem(rig, item);
+    }
+
+    public static bool TryAddItem(this Rig rig, CoreItem item)
+    {
+        if (!rig.CheckCompatibleItem(item.Id))
             return false;
 
         if (!rig.CheckCompatibleItemType(item.ItemType))
@@ -71,6 +88,16 @@ public static class RigHelper
     public static bool TryAddItems(this Rig rig, IList<string> itemId)
     {
         foreach (string item in itemId)
+        {
+            if (!rig.TryAddItem(item))
+                return false;
+        }
+        return true;
+    }
+
+    public static bool TryAddItems(this Rig rig, IList<CoreItem> items)
+    {
+        foreach (CoreItem item in items)
         {
             if (!rig.TryAddItem(item))
                 return false;

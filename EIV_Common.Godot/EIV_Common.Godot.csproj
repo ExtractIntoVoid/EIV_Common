@@ -1,10 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Godot.NET.Sdk/4.3.0">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>0.0.3.0</Version>
+        <Version>0.0.3</Version>
         <Description>Common utilites for EIV.</Description>
         <Title>Common utilites for EIV</Title>
         <Authors>Extract Into Void</Authors>
@@ -26,15 +26,11 @@
     </ItemGroup>
 	
     <ItemGroup>
-		<PackageReference Include="EIV_Coroutines" Version="1.0.0" />
-		<PackageReference Include="EIV_DataPack" Version="1.0.3.1" />
-		<PackageReference Include="EIV_JsonLib" Version="2.0.5.4" />
-		<PackageReference Include="ini-parser-netstandard" Version="2.5.3" />
-		<PackageReference Include="Lib.Harmony" Version="2.3.6" />
-		<PackageReference Include="SemanticVersioning" Version="3.0.0" />
-		<PackageReference Include="Serilog" Version="4.2.0" />
-		<PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
-		<PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+		<PackageReference Include="ModAPI" Version="0.0.2.1" />
+    </ItemGroup>
+	
+    <ItemGroup>
+      <ProjectReference Include="..\EIV_Common\EIV_Common.csproj" />
     </ItemGroup>
 	
 </Project>

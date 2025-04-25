@@ -67,6 +67,19 @@ public class ConfigINI
     }
 
     /// <summary>
+    /// Checks if the <paramref name="section"/> and <paramref name="key"/> exists inside the <paramref name="filename"/>
+    /// </summary>
+    /// <param name="filename">FileName to read from</param>
+    /// <param name="section">INI Section</param>
+    /// <param name="key">INI Key</param>
+    /// <returns><see cref="bool.TrueString"/> if Exists <see cref="bool.FalseString"/> if not</returns>
+    public static bool Exists(string filename, string section, string key)
+    {
+        string readed = Read(filename, section, key);
+        return !string.IsNullOrEmpty(readed);
+    }
+
+    /// <summary>
     /// Write a <paramref name="value"/> of Type <typeparamref name="T"/> to the <paramref name="filename"/> with a Key of <paramref name="key"/> and a Section as <paramref name="section"/>
     /// </summary>
     /// <typeparam name="T">A Type that has <see cref="IParsable{Self}"/></typeparam>

@@ -5,7 +5,6 @@
 /// </summary>
 public interface IUser
 {
-
     /// <summary>
     /// Called for login.
     /// 

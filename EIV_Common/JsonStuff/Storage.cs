@@ -8,11 +8,11 @@ namespace EIV_Common.JsonStuff;
 // Stores all the stuff
 public static class Storage
 {
-    public static Dictionary<string, CoreItem> Items = [];
-    public static Dictionary<string, Effect> Effects = [];
-    public static Dictionary<string, Stash> Stashes = [];
-    public static Dictionary<string, Inventory> Inventories = [];
-    public static Dictionary<string, List<IProfileModule>> OriginToModules = [];
+    public static readonly Dictionary<string, CoreItem> Items = [];
+    public static readonly Dictionary<string, Effect> Effects = [];
+    public static readonly Dictionary<string, Stash> Stashes = [];
+    public static readonly Dictionary<string, Inventory> Inventories = [];
+    public static readonly Dictionary<string, List<IProfileModule>> OriginToModules = [];
 
     public static void ClearAll()
     {
@@ -20,5 +20,6 @@ public static class Storage
         Effects.Clear();
         Stashes.Clear();
         Inventories.Clear();
+        OriginToModules.Clear();
     }
 }

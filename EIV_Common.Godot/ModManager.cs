@@ -12,7 +12,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 
-namespace EIV_Common;
+namespace EIV_Common.Godot;
 
 public class ModManager
 {
@@ -20,7 +20,7 @@ public class ModManager
 
     public static void Init()
     {
-        if (MainLog.logger == null)
+        if (MainLog.Logger == null)
             MainLog.CreateNew();
         MainLoader.Init(new LoadSettings()
         {
@@ -125,7 +125,7 @@ public class ModManager
     /// <param name="delegate"></param>
     public static void LoadMods(Type intefaceType, Assembly assembly, LoadModWithTypeDelegate @delegate)
     {
-        List<Type> types = assembly.GetTypes().Where(intefaceType.IsAssignableFrom).ToList();
+        List<Type> types = [.. assembly.GetTypes().Where(intefaceType.IsAssignableFrom)];
         if (types.Count == 0)
             return;
 

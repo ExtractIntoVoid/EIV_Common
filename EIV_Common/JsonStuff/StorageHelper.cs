@@ -16,6 +16,24 @@ public static class StorageHelper
         return true;
     }
 
+    public static bool TryAddItemStorage<T>(this IStorage storage, T item) where T : CoreItem
+    {
+        if (!storage.CanAddItem(item))
+            return false;
+
+        storage.Items.Add(item);
+        return true;
+    }
+
+    public static bool TryAddItemStorage(this IStorage storage, CoreItem item)
+    {
+        if (!storage.CanAddItem(item))
+            return false;
+
+        storage.Items.Add(item);
+        return true;
+    }
+
     public static bool IsFull(this IStorage storage)
     {
         return (storage.Items.Count == storage.MaxSize) || (storage.GetCurrentVolume() >= storage.MaxVolume) && (storage.GetCurrentWeight() >= storage.MaxWeight);

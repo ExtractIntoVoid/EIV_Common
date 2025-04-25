@@ -1,12 +1,15 @@
-﻿using Godot;
+﻿using EIV_Coroutines;
+using EIV_Coroutines.CoroutineWorkers;
+using Godot;
+using GD = Godot;
 using Serilog;
 
 namespace EIV_Common.Coroutines;
 
-public partial class CoroutineWorkerNode : Node, ICoroutineWorker
+public partial class CoroutineWorkerNode : Node, ICoroutineWorker<double>
 {
-    private List<(double Delay, Coroutine Cor)> _DelayAndCoroutines = [];
-    public List<(double Delay, Coroutine Cor)> DelayAndCoroutines
+    private readonly List<(double Delay, Coroutine<double> Cor)> _DelayAndCoroutines = [];
+    public List<(double Delay, Coroutine<double> Cor)> DelayAndCoroutines
     {
         get
         {
@@ -22,6 +25,7 @@ public partial class CoroutineWorkerNode : Node, ICoroutineWorker
     public object? ReplacementObject { get; set; }
     public Func<IEnumerator<double>, IEnumerator<double>>? ReplacementFunction { get; set; }
     public bool PauseUpdate { get; set; } = false;
+    public bool DontKillSuccess { get; set; } = false;
 
     #region NodeWrite
     public override void _Ready()
@@ -31,12 +35,12 @@ public partial class CoroutineWorkerNode : Node, ICoroutineWorker
 
     public override void _Process(double delta)
     {
-        UpdateProcess(delta);
+        Update(delta);
     }
 
     public override void _PhysicsProcess(double delta)
     {
-        UpdatePhysics(delta);
+        Update(delta);
     }
 
     public override void _ExitTree()
@@ -46,7 +50,7 @@ public partial class CoroutineWorkerNode : Node, ICoroutineWorker
 
     #endregion
     #region Mutex
-    private readonly Godot.Mutex _mutex = new();
+    private readonly GD.Mutex _mutex = new();
     public bool MutexLock()
     {
         return _mutex.TryLock();
@@ -69,7 +73,34 @@ public partial class CoroutineWorkerNode : Node, ICoroutineWorker
 
     public void Update(double deltaTime)
     {
-
+        Kill();
+        if (MutexLock())
+        {
+            for (int i = 0; i < _DelayAndCoroutines.Count; i++)
+            {
+                ((double Delay, Coroutine<double> Cor) DelayAndCor, int index) cor_delay = new();
+                GetCorAndDelayRef(i, ref cor_delay);
+                Log.Debug("Index: {i}, DT: {DeltaTime} Delay: {Delay}, Cor: {Coroutine}", i, deltaTime, cor_delay.DelayAndCor.Delay, cor_delay.DelayAndCor.Cor);
+                if (cor_delay.DelayAndCor.Delay > 0f)
+                    cor_delay.DelayAndCor.Delay -= deltaTime;
+                if (cor_delay.DelayAndCor.Delay <= 0f)
+                {
+                    CoroutineWork(ref cor_delay);
+                }
+                if (double.IsNaN(cor_delay.DelayAndCor.Delay))
+                {
+                    if (ReplacementFunction != null)
+                    {
+                        cor_delay.DelayAndCor.Cor.Enumerator = ReplacementFunction(cor_delay.DelayAndCor.Cor.Enumerator);
+                        CoroutineWork(ref cor_delay);
+                        ReplacementFunction = null;
+                    }
+                }
+                SetCorAndDelayRef(ref cor_delay);
+            }
+            MutexUnLock();
+        }
+        Kill();
     }
     #endregion
     #region Kills
@@ -77,7 +108,7 @@ public partial class CoroutineWorkerNode : Node, ICoroutineWorker
     {
         if (MutexLock())
         {
-            ((double Delay, Coroutine Cor) DelayAndCor, int index) cor_delay = new();
+            ((double Delay, Coroutine<double> Cor) DelayAndCor, int index) cor_delay = new();
             GetCorAndDelayRef(coroutine, ref cor_delay);
             if (cor_delay.index == -1)
             {
@@ -98,7 +129,7 @@ public partial class CoroutineWorkerNode : Node, ICoroutineWorker
         {
             foreach (CoroutineHandle coroutine in coroutines)
             {
-                ((double Delay, Coroutine Cor) DelayAndCor, int index) cor_delay = new();
+                ((double Delay, Coroutine<double> Cor) DelayAndCor, int index) cor_delay = new();
                 GetCorAndDelayRef(coroutine, ref cor_delay);
                 if (cor_delay.index == -1)
                 {
@@ -138,11 +169,17 @@ public partial class CoroutineWorkerNode : Node, ICoroutineWorker
 
     public bool IsCoroutineSuccessInstance(CoroutineHandle coroutine)
     {
-        return GetCoroutine(coroutine).IsSuccess;
+        var cor = GetCoroutine(coroutine);
+        if (cor is null)
+            return false;
+        return cor.IsSuccess;
     }
     public bool IsCoroutineRunningInstance(CoroutineHandle coroutine)
     {
-        return GetCoroutine(coroutine).IsRunning;
+        var cor = GetCoroutine(coroutine);
+        if (cor is null)
+            return false;
+        return cor.IsRunning;
     }
     #endregion
     #region Other Coroutine stuff
@@ -152,7 +189,7 @@ public partial class CoroutineWorkerNode : Node, ICoroutineWorker
             return;
         if (MutexLock())
         {
-            ((double Delay, Coroutine Cor) DelayAndCor, int index) cor_delay = new();
+            ((double Delay, Coroutine<double> Cor) DelayAndCor, int index) cor_delay = new();
             GetCorAndDelayRef(coroutine, ref cor_delay);
             if (cor_delay.index == -1)
             {
@@ -160,13 +197,13 @@ public partial class CoroutineWorkerNode : Node, ICoroutineWorker
                 MutexUnLock();
                 return;
             }
-            cor_delay.DelayAndCor.Cor.ShouldPause = !cor_delay.DelayAndCor.Cor.ShouldPause;
+            cor_delay.DelayAndCor.Cor.IsPaused = !cor_delay.DelayAndCor.Cor.IsPaused;
             Log.Debug("Coroutine {cor} changed ShouldPause state", cor_delay.DelayAndCor.Cor.GetHashCode());
             SetCorAndDelayRef(ref cor_delay);
             MutexUnLock();
         }
     }
-    public void AddCoroutineInstance(Coroutine coroutine)
+    public void AddCoroutineInstance(Coroutine<double> coroutine)
     {
         if (MutexLock())
         {
@@ -190,7 +227,7 @@ public partial class CoroutineWorkerNode : Node, ICoroutineWorker
         return -1;
     }
 
-    public Coroutine GetCoroutine(CoroutineHandle coroutine)
+    public Coroutine<double>? GetCoroutine(CoroutineHandle coroutine)
     {
         if (MutexLock())
         {
@@ -198,85 +235,21 @@ public partial class CoroutineWorkerNode : Node, ICoroutineWorker
             if (index < 0)
             {
                 MutexUnLock();
-                return default;
+                return null;
             }
             MutexUnLock();
             return _DelayAndCoroutines[index].Cor;
         }
-        return default;
+        return null;
     }
     #endregion
     #region Private Stuff
-    private void UpdatePhysics(double deltaTime)
-    {
-        Kill();
-        if (MutexLock())
-        {
-            var DelayAndCor = _DelayAndCoroutines.Where(x=>x.Cor.CoroutineType == CoroutineType.PhysicsProcess).Select((x, index) => index).ToList();
-            for (int i = 0; i < DelayAndCor.Count; i++)
-            {
-                ((double Delay, Coroutine Cor) DelayAndCor, int index) CorAndIndex = new();
-                GetCorAndDelayRef(i, ref CorAndIndex);
-                Log.Debug("Index: {i}, DT: {DeltaTime} Delay: {Delay}, Cor: {Coroutine}", i, deltaTime, CorAndIndex.DelayAndCor.Delay, CorAndIndex.DelayAndCor.Cor);
-                if (CorAndIndex.DelayAndCor.Delay > 0f)
-                    CorAndIndex.DelayAndCor.Delay -= deltaTime;
-                if (CorAndIndex.DelayAndCor.Delay <= 0f)
-                {
-                    CoroutineWork(ref CorAndIndex);
-                }
-                if (double.IsNaN(CorAndIndex.DelayAndCor.Delay))
-                {
-                    if (ReplacementFunction != null)
-                    {
-                        CorAndIndex.DelayAndCor.Cor.Enumerator = ReplacementFunction(CorAndIndex.DelayAndCor.Cor.Enumerator);
-                        CoroutineWork(ref CorAndIndex);
-                        ReplacementFunction = null;
-                    }
-                }
-                SetCorAndDelayRef(ref CorAndIndex);
-            }
-            MutexUnLock();
-        }
-        Kill();
-    }
-    private void UpdateProcess(double deltaTime)
-    {
-        Kill();
-        if (MutexLock())
-        {
-            var cor_and_Delay = _DelayAndCoroutines.Where(x => x.Cor.CoroutineType == CoroutineType.Process).Select((x, index) => index).ToList();
-            for (int i = 0; i < cor_and_Delay.Count; i++)
-            {
-                ((double Delay, Coroutine Cor) DelayAndCor, int index) cor_delay = new();
-                GetCorAndDelayRef(i, ref cor_delay);
-                Log.Debug("Index: {i}, DT: {DeltaTime} Delay: {Delay}, Cor: {Coroutine}", i, deltaTime, cor_delay.DelayAndCor.Delay, cor_delay.DelayAndCor.Cor);
-                if (cor_delay.DelayAndCor.Delay > 0f)
-                    cor_delay.DelayAndCor.Delay -= deltaTime;
-                if (cor_delay.DelayAndCor.Delay <= 0f)
-                {
-                    CoroutineWork(ref cor_delay);
-                }
-                if (double.IsNaN(cor_delay.DelayAndCor.Delay))
-                {
-                    if (ReplacementFunction != null)
-                    {
-                        cor_delay.DelayAndCor.Cor.Enumerator = ReplacementFunction(cor_delay.DelayAndCor.Cor.Enumerator);
-                        CoroutineWork(ref cor_delay);
-                        ReplacementFunction = null;
-                    }
-                }
-                SetCorAndDelayRef(ref cor_delay);
-            }
-            MutexUnLock();
-        }
-        Kill();
-    }
 
-    private void CoroutineWork(ref ((double Delay, Coroutine Cor) DelayAndCor, int index) ref_values)
+    private void CoroutineWork(ref ((double Delay, Coroutine<double> Cor) DelayAndCor, int index) ref_values)
     {
         if (ref_values.DelayAndCor.Cor.ShouldKill)
             return;
-        if (ref_values.DelayAndCor.Cor.ShouldPause)
+        if (ref_values.DelayAndCor.Cor.IsPaused)
             return;
         if (ref_values.DelayAndCor.Cor.IsSuccess)
             return;
@@ -285,12 +258,13 @@ public partial class CoroutineWorkerNode : Node, ICoroutineWorker
         {
             ref_values.DelayAndCor.Cor.IsRunning = false;
             ref_values.DelayAndCor.Cor.IsSuccess = true;
-            ref_values.DelayAndCor.Cor.ShouldKill = true;
+            if (!DontKillSuccess)
+                ref_values.DelayAndCor.Cor.ShouldKill = true;
             Log.Debug("Coroutine {cor} changed states", ref_values.DelayAndCor.Cor);
         }
     }
 
-    private bool MoveNext(ref ((double Delay, Coroutine Cor) DelayAndCor, int index) ref_values)
+    private static bool MoveNext(ref ((double Delay, Coroutine<double> Cor) DelayAndCor, int index) ref_values)
     {
         bool result = ref_values.DelayAndCor.Cor.Enumerator.MoveNext();
         ref_values.DelayAndCor.Delay = ref_values.DelayAndCor.Cor.Enumerator.Current;
@@ -311,7 +285,7 @@ public partial class CoroutineWorkerNode : Node, ICoroutineWorker
         }
     }
 
-    private void GetCorAndDelayRef(int index, ref ((double Delay, Coroutine Cor), int index) ref_values)
+    private void GetCorAndDelayRef(int index, ref ((double Delay, Coroutine<double> Cor), int index) ref_values)
     {
         if (index == -1)
             return;
@@ -322,7 +296,7 @@ public partial class CoroutineWorkerNode : Node, ICoroutineWorker
         }
     }
 
-    private void GetCorAndDelayRef(CoroutineHandle coroutine, ref ((double Delay, Coroutine Cor), int index) ref_values)
+    private void GetCorAndDelayRef(CoroutineHandle coroutine, ref ((double Delay, Coroutine<double> Cor), int index) ref_values)
     {
         if (MutexLock())
         {
@@ -338,7 +312,7 @@ public partial class CoroutineWorkerNode : Node, ICoroutineWorker
         }
     }
 
-    private void SetCorAndDelayRef(ref ((double Delay, Coroutine Cor) DelayAndCor, int index) ref_values)
+    private void SetCorAndDelayRef(ref ((double Delay, Coroutine<double> Cor) DelayAndCor, int index) ref_values)
     {
         if (ref_values.index == -1)
             return;

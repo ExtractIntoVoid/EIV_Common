@@ -69,4 +69,16 @@ public static class GunHelper
         gun.Magazine = magazine;
         return true;
     }
+
+    public static bool TryInsertMagazine(this Gun gun, Magazine magazine, string ammoId)
+    {
+        if (!gun.CheckMagazineCompatible(magazine.Id))
+            return false;
+
+        if (!magazine.TryInsertAmmo(ammoId))
+            return false;
+
+        gun.Magazine = magazine;
+        return true;
+    }
 }
