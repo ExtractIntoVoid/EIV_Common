@@ -81,4 +81,14 @@ public static class ItemLoader
                 Storage.OriginToModules.TryAdd(NormalizeMod(item), profileModules);
         }
     }
+
+    public static string NormalizeMod(string path, string parentPath = "")
+    {
+        path = path.Replace('\\', '_').Replace('/', '_');
+        if (path.Contains(".json"))
+            path = path.Split(".json")[0];
+        if (parentPath != "")
+            path = path.Replace(parentPath, "");
+        return path;
+    }
 }

@@ -27,7 +27,7 @@ public static class MainLog
 
     public static LoggerConfiguration GetConfiguration()
     {
-        return new()
+        return new LoggerConfiguration()
             .MinimumLevel.ControlledBy(LevelSwitch)
             .Enrich.With(new MethodEnricher())
             .WriteTo.File("logs.txt", outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] ({Method}) {Message:lj}{NewLine}{Exception}", levelSwitch: FileLevelSwitch)
